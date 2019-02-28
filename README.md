@@ -1,0 +1,2 @@
+# SFunk
+Entropy functional
