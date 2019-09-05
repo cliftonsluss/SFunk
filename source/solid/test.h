@@ -36,7 +36,7 @@
 #ifndef TEST_H
 #define TEST_H
 
-using namespace std;
+// using namespace std;
 
 template <class T, class DataSource, typename _DistanceType = T>
 struct NN_Adaptor {
@@ -88,7 +88,7 @@ struct PointCloud
 
 	Bounds Xbounds, Ybounds, Zbounds;
 
-	map<int,int> pbc_idx_map;
+	std::map<int,int> pbc_idx_map;
 
 	// Must return the number of data points
 	inline size_t kdtree_get_point_count() const { return pts.size(); }
@@ -125,8 +125,8 @@ struct simFrame
 	struct Atom {
 	  int atom_num, atom_type;
 	};
-	vector<Atom> atms;
-	vector<double> flat;
+	std::vector<Atom> atms;
+	std::vector<double> flat;
 	int num_atoms;
 };
 
@@ -242,14 +242,14 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
 
 class Trajectory {
   public:
-    Trajectory(string &filename, const size_t num_atoms, const size_t header);
+    Trajectory(std::string &filename, const size_t num_atoms, const size_t header);
     void getNextFrame(simFrame<double> &frame);
 
   private:
-    string filename;
+    std::string filename;
     size_t num_atoms;
     size_t header;
-    ifstream inputfile;
+    std::ifstream inputfile;
 };
 
 //Welford method expanded to 3d point cloud
@@ -260,7 +260,7 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
     old_avgz, diff_sqrd, nsamples, variance;
   simFrame<double> frame0;
   simFrame<double> frame;
-  //vector<double> avg_x, avg_y, avg_z;
+  //std::vector<double> avg_x, avg_y, avg_z;
   Trajectory traj(filename, num_atoms, 5);
   traj.getNextFrame(frame);
   frame0 = frame;
@@ -268,7 +268,7 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
   result.avg.num_atoms = num_atoms;
 
   for (int j = 0; j < num_atoms; j++) {
-    //cout << frame0.pts[j].x << endl;
+    //cout << frame0.pts[j].x << std::endl;
     result.avg.pts[j].x = frame0.pts[j].x;
     result.avg.pts[j].y = frame0.pts[j].y;
     result.avg.pts[j].z = frame0.pts[j].z;

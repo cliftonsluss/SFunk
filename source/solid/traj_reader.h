@@ -8,11 +8,11 @@
 #ifndef TRAJ_READER_H
 #define TRAJ_READER_H
 
-using namespace std;
+
 
 class Trajectory {
   public:
-    Trajectory(string &filename, const size_t num_atoms, const size_t header); 
+    Trajectory(string &filename, const size_t num_atoms, const size_t header);
     void getNextFrame(simFrame<double> &frame);
 
   private:

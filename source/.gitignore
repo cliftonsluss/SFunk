@@ -2,3 +2,4 @@
 ./solid/traj_reader.o
 ./traj_16_0.002.trj
 ./trj_54_0.00002.trj
+./solid/traj

@@ -1,7 +1,7 @@
 #include "test.h"
 
 
-Trajectory::Trajectory(string &filename, const size_t num_atoms,
+Trajectory::Trajectory(std::string &filename, const size_t num_atoms,
     const size_t header) {
   Trajectory::header = header;
   Trajectory::num_atoms = num_atoms;
@@ -9,7 +9,7 @@ Trajectory::Trajectory(string &filename, const size_t num_atoms,
 }
 
 void Trajectory::getNextFrame(simFrame<double> &frame) {
-  string temp;
+  std::string temp;
   double x, y, z, xc, yc, zc;
   int n, nt;
   for (int i = 0; i < Trajectory::header; i++) {
