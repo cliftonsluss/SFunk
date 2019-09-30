@@ -1,0 +1,4 @@
+neighbors 12
+atoms 16000
+frames 20000
+outfile ouput.txt
