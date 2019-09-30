@@ -16,7 +16,7 @@ class Trajectory {
     void getNextFrame(simFrame<double> &frame);
 
   private:
-    string filename;
+    // string filename;
     size_t num_atoms;
     size_t header;
     ifstream inputfile;

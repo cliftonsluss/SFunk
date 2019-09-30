@@ -1,5 +1,6 @@
 #include "nanoflann.h"
 #include "test.h"
+#include "read_config.h"
 #include <cstdlib>
 #include <iostream>
 #include <cmath>
@@ -383,16 +384,20 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   std::cout << "variance01= " << variance << std::endl;
   std::cout << "std01= " << pow(variance, 0.5) << std::endl;
 }
-int main() {
-  int num_nbs = 8;
-  int num_atoms = 16000;
-  int num_frames = 5000;
-//  std::string filename = "./run_06.dump";
-//  std::string filename = "../../../lammps_EF/1K_500.trj";
-//  std::string filename = "../../../lammps_EF/100K_5000.trj";
-  std::string filename = "../../../lammps_EF/source/testing/1K_500.trj";
-//  std::string filename = "./traj_54_0.00002.trj";
-//  std::string filename = "../../../lammps_EF/source/testing/run_04.dump";
+int main(int argc, char *argv[]) {
+  // int num_nbs = 8;
+  // int num_atoms = 16000;
+  // int num_frames = 5000;
+  // std::string filename = "../../../lammps_EF/source/testing/1K_500.trj";
+  std::map<std::string,std::string> config_map;
+  std::string config_file = argv[1];
+  Read_config config(config_file, config_map);
+  config.get_config();
+  int num_nbs = std::stoi(config_map["neighbors"]);
+  int num_atoms = std::stoi(config_map["atoms"]);
+  int num_frames = std::stoi(config_map["frames"]);
+  std::string filename = config_map["outfile"];
+
   resultSet<double> results;
   //NNeighbors<double>(filename, num_atoms, num_frames, num_nbs);
   variance00WK<double>(filename, num_atoms, num_frames,results);
