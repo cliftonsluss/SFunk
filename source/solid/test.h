@@ -239,18 +239,19 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
 
 
 
+class Trajectory;
+#include "traj_reader.h"
+//class Trajectory {
+//  public:
+//    Trajectory(std::string &filename, const size_t num_atoms, const size_t header);
+//    void getNextFrame(simFrame<double> &frame);//
 
-class Trajectory {
-  public:
-    Trajectory(std::string &filename, const size_t num_atoms, const size_t header);
-    void getNextFrame(simFrame<double> &frame);
-
-  private:
-    std::string filename;
-    size_t num_atoms;
-    size_t header;
-    std::ifstream inputfile;
-};
+//  private:
+//    std::string filename;
+//    size_t num_atoms;
+//    size_t header;
+//    std::ifstream inputfile;
+//};
 
 //Welford method expanded to 3d point cloud
 template <typename T>

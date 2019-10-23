@@ -12,14 +12,15 @@
 
 class Trajectory {
   public:
-    Trajectory(string &filename, const size_t num_atoms, const size_t header);
+    Trajectory(std::string &filename, const size_t num_atoms, const size_t header);
     void getNextFrame(simFrame<double> &frame);
+    void skipFrames(const size_t sframes);
 
   private:
     // string filename;
     size_t num_atoms;
     size_t header;
-    ifstream inputfile;
+    std::ifstream inputfile;
 };
 
 #endif

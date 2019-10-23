@@ -1,5 +1,5 @@
 #include "test.h"
-
+#include "traj_reader.h"
 
 Trajectory::Trajectory(std::string &filename, const size_t num_atoms,
     const size_t header) {
@@ -40,4 +40,13 @@ void Trajectory::getNextFrame(simFrame<double> &frame) {
     frame.pts[n-1].z = z;
   }
   getline(inputfile, temp);
+}
+
+void Trajectory::skipFrames(const size_t sframes) {
+  std::string temp;
+  size_t slines = sframes*(Trajectory::header + 4 + num_atoms);
+  for (int i = 0; i < slines; i++) {
+    getline(inputfile, temp);
+  }
+  std::cout << temp << '\n';
 }

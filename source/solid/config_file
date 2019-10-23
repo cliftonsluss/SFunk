@@ -1,4 +1,5 @@
-neighbors 12
-atoms 16000
-frames 20000
-outfile ouput.txt
+neighbors=12
+atoms=16
+frames=200
+skipframes=4
+datafile=traj_16_0.002.trj

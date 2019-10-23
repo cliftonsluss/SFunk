@@ -8,7 +8,7 @@ SFunk_solid: traj.o traj_reader.o read_config.o
 traj.o: traj.cpp test.h
 	$(CC) $(CFLAGS) -c -g traj.cpp
 
-traj_reader.o: traj_reader.cpp test.h
+traj_reader.o: traj_reader.cpp traj_reader.h 
 	$(CC) $(CFLAGS) -c -g traj_reader.cpp
 
 read_config.o: read_config.cpp read_config.h
