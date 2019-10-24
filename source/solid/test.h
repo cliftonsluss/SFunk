@@ -256,13 +256,14 @@ class Trajectory;
 //Welford method expanded to 3d point cloud
 template <typename T>
 void variance00WK(std::string &filename, int num_atoms, int num_frames,
-    resultSet<T> &result) {
+    int num_skipframes, resultSet<T> &result) {
   double xa, ya, za, xb, yb, zb, xlen, ylen, zlen, old_avgx, old_avgy,
     old_avgz, diff_sqrd, nsamples, variance;
   simFrame<double> frame0;
   simFrame<double> frame;
   //std::vector<double> avg_x, avg_y, avg_z;
   Trajectory traj(filename, num_atoms, 5);
+  traj.skipFrames(num_skipframes);
   traj.getNextFrame(frame);
   frame0 = frame;
   result.avg.pts.resize(num_atoms);

@@ -271,7 +271,7 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
 }
 template <typename num_t>
 void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,
-    const int num_frames, const int num_nbs) {
+    const int num_frames, const int num_skipframes, const int num_nbs) {
   PointCloud<num_t> cloud;
   double skin = 2.5;
   size_t header = 5;
@@ -339,6 +339,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
     }
     }
   }
+  traj.skipFrames(num_skipframes);
   for (int i = 0; i < num_frames; i++) {
     traj.getNextFrame(frame);
     xlen = frame.xbox.max - frame.xbox.min;
