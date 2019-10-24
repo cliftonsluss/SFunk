@@ -1,9 +1,12 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include "json.h"
 
 #ifndef READ_CONFIG_H
 #define READ_CONFIG_H
+
+using json = nlohmann::json;
 
 class Read_config {
   public:
@@ -12,10 +15,12 @@ class Read_config {
       void get_config();
 
   private:
-    std::ifstream config_file;
+    // std::ifstream config_file;
     std::map<std::string, std::string> config_map;
+    std::string config_file;
 
-
+  public:
+    json j;
 
 };
 
