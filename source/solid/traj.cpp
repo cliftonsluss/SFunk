@@ -375,8 +375,8 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
       zdist_2 = pow(std::abs(za-zb),2.0);
       dist = pow(xdist_2 + ydist_2 + zdist_2, 0.5);
       old_avg = avg;
-      avg = old_avg + abs(dist - old_avg)/n;
-      diff_sqrd = diff_sqrd + abs(dist - old_avg)*abs(dist - avg);
+      avg = old_avg + std::abs(dist - old_avg)/n;
+      diff_sqrd = diff_sqrd + std::abs(dist - old_avg)*std::abs(dist - avg);
       n++;
     }
   }
