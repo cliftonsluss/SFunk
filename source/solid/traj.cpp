@@ -250,16 +250,16 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
       ydist = std::abs(ya-yb);
       zdist = std::abs(za-zb);
       old_avg = avg;
-      avg = old_avg + (xdist - old_avg)/n;
-      diff_sqrd = diff_sqrd + ((xdist - old_avg)*(xdist - avg));
+      avg = old_avg + std::abs(xdist - old_avg)/n;
+      diff_sqrd = diff_sqrd + (std::abs(xdist - old_avg)*std::abs(xdist - avg));
       n++;
       old_avg = avg;
-      avg = old_avg + (ydist - avg)/n;
-      diff_sqrd = diff_sqrd + ((ydist - old_avg)*(ydist - avg));
+      avg = old_avg + std::abs(ydist - avg)/n;
+      diff_sqrd = diff_sqrd + (std::abs(ydist - old_avg)*std::abs(ydist - avg));
       n++;
       old_avg = avg;
-      avg = old_avg + (zdist - avg)/n;
-      diff_sqrd = diff_sqrd + ((zdist - old_avg)*(zdist - avg));
+      avg = old_avg + std::abs(zdist - avg)/n;
+      diff_sqrd = diff_sqrd + (std::abs(zdist - old_avg)*std::abs(zdist - avg));
       n++;
     }
   }
@@ -411,7 +411,7 @@ int main(int argc, char *argv[]) {
 resultSet<double> results;
 //NNeighbors<double>(filename, num_atoms, num_frames, num_nbs);
 variance00WK<double>(datafile, num_atoms, num_frames, num_skipframes, results);
-variance01kd_r<double>(datafile, results.avg, num_atoms, num_frames, num_skipframes, num_nbs);
+variance01kd<double>(datafile, results.avg, num_atoms, num_frames, num_skipframes, num_nbs);
 std::cout << "variance00= " << results.variance << std::endl;
 std::cout << "std00= " << pow(results.variance,0.5) << std::endl;
 return 0;
