@@ -36,6 +36,7 @@ void NNeighbors(std::string &filename, const size_t N, const int num_frames,
   double avg = 0;
   Trajectory traj(filename, N, header);
   simFrame<num_t> frame;
+  frame.index = 0;
   for (int i = 0; i < num_frames; i++) {
     traj.getNextFrame(frame);
     populatePointCloudPBC(cloud, frame, skin, true);
@@ -148,8 +149,13 @@ void NNeighbors(std::string &filename, const size_t N, const int num_frames,
 
 template <typename num_t>
 void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,
-    const int num_frames, const int num_nbs) {
+    const int num_frames, const int num_skipframes, const int num_nbs) {
+// create PointCloud object
   PointCloud<num_t> cloud;
+  // skin defines amount of padding to add to outsides of simulation cube
+  // units are Angstroms
+  // Instead of the minimum image criterium which won't work for KDtree
+  // we replicate enough of the region from PBC necessary to perform calculations
   double skin = 2.5;
   size_t header = 5;
   int n = 1;
@@ -161,12 +167,14 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
   Trajectory traj(filename, N, header);
   simFrame<num_t> frame;
   //std::cout << "populating point cloud" << std::endl;
+  // is avg_frame scaled or no?
   populatePointCloudPBC(cloud, avg_frame, skin);
   typedef KDTreeSingleIndexAdaptor<
    NN_Adaptor<num_t, PointCloud<num_t> >,
    PointCloud<num_t>,
    3
    > my_kd_tree_t;
+  // dimensionality = 3, DatasetAdaptor = cloud, max leaf count = 10
   my_kd_tree_t index(3, cloud, KDTreeSingleIndexAdaptorParams(10) );
   //std::cout << "building point cloud" << std::endl;
   index.buildIndex();
@@ -176,6 +184,7 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
   int nbs = 0;
   std::vector<double> idxs;
   std::vector<double> neigh_idxs;
+  // for all atoms
   for (int j = 0; j < N; j++)
   {
     idx = j;
@@ -184,6 +193,7 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
     {
     std::vector<size_t> ret_index(num_results);
     std::vector<num_t> out_dist(num_results);
+  // pass output vectors by reference
     num_results = index.knnSearch(&query_pt[0], num_results, &ret_index[0],
         &out_dist[0]);
     ret_index.resize(num_results);
@@ -216,11 +226,15 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
     }
     }
   }
+  // armed with a neighbor list based on an average frame, we calculate the
+  // neighbor distances
+  traj.skipFrames(num_skipframes);
   for (int i = 0; i < num_frames; i++) {
     traj.getNextFrame(frame);
     xlen = frame.xbox.max - frame.xbox.min;
     ylen = frame.ybox.max - frame.ybox.min;
     zlen = frame.zbox.max - frame.zbox.min;
+  // grab our neighbors and apply minimum image criterium
     for (size_t k = 0; k < nbs; k++) {
       xa = frame.pts[idxs[k]].x;
       xb = frame.pts[neigh_idxs[k]].x;
@@ -246,9 +260,12 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
       if ((za-zb) > (zlen*0.5)){
 	      zb = zb + zlen;
       }
+  // finally get the absolute value of the difference
       xdist = std::abs(xa-xb);
       ydist = std::abs(ya-yb);
       zdist = std::abs(za-zb);
+  // below is an implementation of the Welford method of running statistics
+  // extended to 3 dimensions, all dimensions are summed into one dimension
       old_avg = avg;
       avg = old_avg + std::abs(xdist - old_avg)/n;
       diff_sqrd = diff_sqrd + (std::abs(xdist - old_avg)*std::abs(xdist - avg));
@@ -411,7 +428,9 @@ int main(int argc, char *argv[]) {
 resultSet<double> results;
 //NNeighbors<double>(filename, num_atoms, num_frames, num_nbs);
 variance00WK<double>(datafile, num_atoms, num_frames, num_skipframes, results);
+// variance01kd_r<double>(datafile, results.avg, num_atoms, num_frames, num_skipframes, num_nbs);
 variance01kd<double>(datafile, results.avg, num_atoms, num_frames, num_skipframes, num_nbs);
+
 std::cout << "variance00= " << results.variance << std::endl;
 std::cout << "std00= " << pow(results.variance,0.5) << std::endl;
 return 0;

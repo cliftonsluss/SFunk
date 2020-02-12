@@ -128,6 +128,7 @@ struct simFrame
 	std::vector<Atom> atms;
 	std::vector<double> flat;
 	int num_atoms;
+  int index;
 };
 
 template <typename T>
@@ -139,11 +140,16 @@ struct resultSet
 
 
 template <typename T>
+// scaled means that fractional coordinates have been converted to
+// full value cartesian coordinates
 void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
     double skin, bool scaled = false, const T max_range = 10) {
+  // calculate our box widths
   double xlen = frame.xbox.max - frame.xbox.min;
   double ylen = frame.ybox.max - frame.ybox.min;
   double zlen = frame.zbox.max - frame.zbox.min;
+  // every atom found outside of these thresholds will be added as skin to
+  // opposite side of PointCloud
   double x_thresh_min = frame.xbox.min + skin;
   double x_thresh_max = frame.xbox.max - skin;
   double y_thresh_min = frame.ybox.min + skin;
@@ -152,7 +158,8 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
   double z_thresh_max = frame.zbox.max - skin;
   cloud.pts.resize(frame.num_atoms);
   if (scaled) {
-    // getNextFrame already rescales these
+  // getNextFrame rescales these so if feeding frames from getNextFrame into
+  // populatePointCloudPBC make sure to set scaled = true
     for (int i = 0; i < frame.num_atoms; i++){
       cloud.pts[i].x = frame.pts[i].x;
       cloud.pts[i].y = frame.pts[i].y;
@@ -160,7 +167,7 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
     }
   }
   else {
-    // this frame was created with fractional coordinates
+  // this frame was created with fractional coordinates
     for (int i = 0; i < frame.num_atoms; i++) {
       cloud.pts[i].x = (frame.pts[i].x * xlen) + frame.xbox.min;
       cloud.pts[i].y = (frame.pts[i].y * ylen) + frame.ybox.min;
@@ -173,6 +180,7 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
   // pad outside of cloud to mimic periodic boundary conditions
   // and create map of added indexes back to original indexes
   int pbc_idx = cloud.count;
+  // first we add padding to boundaries in x direction
   for (int i = 0; i < cloud.count; i++) {
     if (cloud.pts[i].x > x_thresh_max) {
       cloud.pts.push_back({cloud.pts[i].x - xlen, cloud.pts[i].y, cloud.pts[i].z});
@@ -185,17 +193,23 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
       pbc_idx++;
     }
   }
+  // we have to reset cloud.count to include the atoms we've added
   cloud.count = pbc_idx;
+
+  // next we pad the y boundaries
   for (int i =0; i < cloud.count; i++) {
     if (cloud.pts[i].y > y_thresh_max) {
       cloud.pts.push_back({cloud.pts[i].x, cloud.pts[i].y - ylen, cloud.pts[i].z});
+  // if this point has alrady been remapped, just the map the new reference to
+  // the previously mapped point
       if (cloud.pbc_idx_map.find(i) != cloud.pbc_idx_map.end()) {
-	cloud.pbc_idx_map[pbc_idx] = cloud.pbc_idx_map[i];
-	pbc_idx++;
+	      cloud.pbc_idx_map[pbc_idx] = cloud.pbc_idx_map[i];
+	      pbc_idx++;
       }
+  // if this point has not already been remapped, then create a new map entry
       else {
-	cloud.pbc_idx_map[pbc_idx] = i;
-	pbc_idx++;
+	      cloud.pbc_idx_map[pbc_idx] = i;
+	      pbc_idx++;
       }
     }
     if (cloud.pts[i].y < y_thresh_min) {
@@ -210,7 +224,9 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
       }
     }
   }
+
   cloud.count = pbc_idx;
+  // finally pad the z boundaries
   for (int i =0; i < cloud.count; i++) {
     if (cloud.pts[i].z > z_thresh_max) {
       cloud.pts.push_back({cloud.pts[i].x, cloud.pts[i].y, cloud.pts[i].z - zlen});
@@ -254,6 +270,7 @@ class Trajectory;
 //};
 
 //Welford method expanded to 3d point cloud
+// https://www.johndcook.com/blog/standard_deviation/
 template <typename T>
 void variance00WK(std::string &filename, int num_atoms, int num_frames,
     int num_skipframes, resultSet<T> &result) {
@@ -269,6 +286,9 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
   result.avg.pts.resize(num_atoms);
   result.avg.num_atoms = num_atoms;
 
+  // for all points in first frame place them as initial values of the average
+  // frame.
+  // Points are already scaled by Trajectory::getNextFrame method
   for (int j = 0; j < num_atoms; j++) {
     //cout << frame0.pts[j].x << std::endl;
     result.avg.pts[j].x = frame0.pts[j].x;
@@ -277,6 +297,7 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
   }
   diff_sqrd = 0;
   double div_3 = 1.0/3.0;
+
   for (int i = 1; i < num_frames; i++) {
     traj.getNextFrame(frame);
     xlen = frame.xbox.max - frame.xbox.min;
@@ -337,6 +358,7 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
       }
     }
   }
+  // what is this bit here? ah, we're returning to fractional coordinates
   double xfac = 1.0/(result.avg.xbox.max - result.avg.xbox.min);
   double yfac = 1.0/(result.avg.ybox.max - result.avg.ybox.min);
   double zfac = 1.0/(result.avg.zbox.max - result.avg.zbox.min);
