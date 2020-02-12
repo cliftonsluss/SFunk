@@ -15,4 +15,4 @@ read_config.o: read_config.cpp read_config.h
 	$(CC) $(CFLAGS) -c -g read_config.cpp
 
 clean:
-	rm *.o
+	rm *.o SFunk_solid
