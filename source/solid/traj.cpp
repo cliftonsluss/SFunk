@@ -271,11 +271,11 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
       diff_sqrd = diff_sqrd + ((xdist - old_avg)*(xdist - avg));
       n++;
       old_avg = avg;
-      avg = old_avg + (ydist - avg)/n;
+      avg = old_avg + (ydist - old_avg)/n;
       diff_sqrd = diff_sqrd + ((ydist - old_avg)*(ydist - avg));
       n++;
       old_avg = avg;
-      avg = old_avg + (zdist - avg)/n;
+      avg = old_avg + (zdist - old_avg)/n;
       diff_sqrd = diff_sqrd + ((zdist - old_avg)*(zdist - avg));
       n++;
     }
