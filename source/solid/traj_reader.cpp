@@ -30,7 +30,7 @@ void Trajectory::getNextFrame(simFrame<double> &frame) {
 
   for (size_t i = 0; i < num_atoms; i++) {
     inputfile >> n >> nt >> xc >> yc >> zc;
-    std::cout << n << endl;
+    std::cout << n << std::endl;
     frame.atms[n-1].atom_num = n;
     frame.atms[n-1].atom_type = nt;
     x = xc*xlen + frame.xbox.min;
