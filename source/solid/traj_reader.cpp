@@ -48,5 +48,6 @@ void Trajectory::skipFrames(const size_t sframes) {
   for (int i = 0; i < slines; i++) {
     getline(inputfile, temp);
   }
-  std::cout << temp << '\n';
+  // statement below lets us check skipFrames functionality
+  // std::cout << temp << '\n';
 }

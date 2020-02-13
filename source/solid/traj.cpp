@@ -292,7 +292,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   PointCloud<num_t> cloud;
   double skin = 2.5;
   size_t header = 5;
-  long n = 1;
+  size_t n = 1;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
       dist, variance;
   double diff_sqrd = 0;
@@ -311,12 +311,12 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   //std::cout << "building point cloud" << std::endl;
   index.buildIndex();
   size_t num_results = num_nbs;
-  int idx;
-  int neigh_idx;
-  int nbs = 0;
+  size_t idx;
+  size_t neigh_idx;
+  size_t nbs = 0;
   std::vector<double> idxs;
   std::vector<double> neigh_idxs;
-  for (int j = 0; j < N; j++)
+  for (size_t j = 0; j < N; j++)
   {
     idx = j;
     const num_t query_pt[3] = { cloud.pts[idx].x, cloud.pts[idx].y,
@@ -357,18 +357,21 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
     }
   }
   traj.skipFrames(num_skipframes);
-  for (int i = 0; i < num_frames; i++) {
+  for (size_t i = 0; i < num_frames; i++) {
     traj.getNextFrame(frame);
     xlen = frame.xbox.max - frame.xbox.min;
     ylen = frame.ybox.max - frame.ybox.min;
     zlen = frame.zbox.max - frame.zbox.min;
     for (size_t k = 0; k < nbs; k++) {
+      // grab out reference point x,y,z coordinates and coordinates of it's
+      // neighbors
       xa = frame.pts[idxs[k]].x;
       xb = frame.pts[neigh_idxs[k]].x;
       ya = frame.pts[idxs[k]].y;
       yb = frame.pts[neigh_idxs[k]].y;
       za = frame.pts[idxs[k]].z;
       zb = frame.pts[neigh_idxs[k]].z;
+      // apply minimum image criteria and calculate neighbor distances in xyz
       if ((xa-xb) < (-xlen*0.5)) {
 	      xb = xb - xlen;
       }
@@ -387,13 +390,16 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
       if ((za-zb) > (zlen*0.5)){
 	      zb = zb + zlen;
       }
-      xdist_2 = pow(std::abs(xa-xb),2.0);
-      ydist_2 = pow(std::abs(ya-yb),2.0);
-      zdist_2 = pow(std::abs(za-zb),2.0);
+      // we will calculate the average sum of the squared component distances
+      // and then take the square root of the final result
+      xdist_2 = pow((xa-xb),2.0);
+      ydist_2 = pow((ya-yb),2.0);
+      zdist_2 = pow((za-zb),2.0);
       dist = pow(xdist_2 + ydist_2 + zdist_2, 0.5);
       old_avg = avg;
-      avg = old_avg + std::abs(dist - old_avg)/n;
-      diff_sqrd = diff_sqrd + std::abs(dist - old_avg)*std::abs(dist - avg);
+      avg = old_avg + (dist - old_avg)/n;
+      // diff_sqrd/(n-1) will be our variance
+      diff_sqrd = diff_sqrd + (dist - old_avg)*(dist - avg);
       n++;
     }
   }
@@ -404,13 +410,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   std::cout << "std01= " << pow(variance, 0.5) << std::endl;
 }
 int main(int argc, char *argv[]) {
-  // int num_nbs = 8;
-  // int num_atoms = 16;
-  // int num_frames = 20;
-  // int num_skipframes = 4;
-  // // std::string datafile = "../../../lammps_EF/source/testing/1K_500.trj";
-  // std::string datafile = "traj_16_0.002.trj";
-
+  // read parameters from json file
   std::map<std::string,std::string> config_map;
   std::string config_file = argv[1];
   Read_config config(config_file, config_map);
@@ -421,16 +421,18 @@ int main(int argc, char *argv[]) {
   int num_skipframes = config.j["skipframes"];
   std::string datafile = config.j["datafile"];
 
-  // Trajectory traj(datafile, num_atoms, 5);
-  // traj.skipFrames(num_skipframes);
 
 //lines below should all remove // to uncomment
+// create a resultSet obect to house our results
 resultSet<double> results;
 //NNeighbors<double>(filename, num_atoms, num_frames, num_nbs);
+// only results.avg is needed from variance00WK at thi point, that functionality
+// will be broken out into a more compact method at a later date
 variance00WK<double>(datafile, num_atoms, num_frames, num_skipframes, results);
-// variance01kd_r<double>(datafile, results.avg, num_atoms, num_frames, num_skipframes, num_nbs);
-variance01kd<double>(datafile, results.avg, num_atoms, num_frames, num_skipframes, num_nbs);
+variance01kd_r<double>(datafile, results.avg, num_atoms, num_frames, num_skipframes, num_nbs);
+// variance01kd<double>(datafile, results.avg, num_atoms, num_frames, num_skipframes, num_nbs);
 
+// values below not needed anymore but still being reported for reference for now
 std::cout << "variance00= " << results.variance << std::endl;
 std::cout << "std00= " << pow(results.variance,0.5) << std::endl;
 return 0;
