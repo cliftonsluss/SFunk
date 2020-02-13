@@ -179,9 +179,9 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
   //std::cout << "building point cloud" << std::endl;
   index.buildIndex();
   size_t num_results = num_nbs;
-  int idx;
-  int neigh_idx;
-  int nbs = 0;
+  long idx;
+  long neigh_idx;
+  long nbs = 0;
   std::vector<double> idxs;
   std::vector<double> neigh_idxs;
   // for all atoms
@@ -267,16 +267,16 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
   // below is an implementation of the Welford method of running statistics
   // extended to 3 dimensions, all dimensions are summed into one dimension
       old_avg = avg;
-      avg = old_avg + std::abs(xdist - old_avg)/n;
-      diff_sqrd = diff_sqrd + (std::abs(xdist - old_avg)*std::abs(xdist - avg));
+      avg = old_avg + (xdist - old_avg)/n;
+      diff_sqrd = diff_sqrd + ((xdist - old_avg)*(xdist - avg));
       n++;
       old_avg = avg;
-      avg = old_avg + std::abs(ydist - avg)/n;
-      diff_sqrd = diff_sqrd + (std::abs(ydist - old_avg)*std::abs(ydist - avg));
+      avg = old_avg + (ydist - avg)/n;
+      diff_sqrd = diff_sqrd + ((ydist - old_avg)*(ydist - avg));
       n++;
       old_avg = avg;
-      avg = old_avg + std::abs(zdist - avg)/n;
-      diff_sqrd = diff_sqrd + (std::abs(zdist - old_avg)*std::abs(zdist - avg));
+      avg = old_avg + (zdist - avg)/n;
+      diff_sqrd = diff_sqrd + ((zdist - old_avg)*(zdist - avg));
       n++;
     }
   }
