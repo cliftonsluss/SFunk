@@ -11,8 +11,8 @@ Trajectory::Trajectory(std::string &filename, const size_t num_atoms,
 void Trajectory::getNextFrame(simFrame<double> &frame) {
   std::string temp;
   double x, y, z, xc, yc, zc;
-  int n, nt;
-  for (int i = 0; i < Trajectory::header; i++) {
+  size_t n, nt;
+  for (size_t i = 0; i < Trajectory::header; i++) {
     getline(inputfile, temp);
   }
 
@@ -28,8 +28,9 @@ void Trajectory::getNextFrame(simFrame<double> &frame) {
   frame.atms.resize(num_atoms);
   frame.num_atoms = num_atoms;
 
-  for (int i = 0; i < num_atoms; i++) {
+  for (size_t i = 0; i < num_atoms; i++) {
     inputfile >> n >> nt >> xc >> yc >> zc;
+    std::cout << n << endl;
     frame.atms[n-1].atom_num = n;
     frame.atms[n-1].atom_type = nt;
     x = xc*xlen + frame.xbox.min;
@@ -45,7 +46,7 @@ void Trajectory::getNextFrame(simFrame<double> &frame) {
 void Trajectory::skipFrames(const size_t sframes) {
   std::string temp;
   size_t slines = sframes*(Trajectory::header + 4 + num_atoms);
-  for (int i = 0; i < slines; i++) {
+  for (size_t i = 0; i < slines; i++) {
     getline(inputfile, temp);
   }
   // statement below lets us check skipFrames functionality
