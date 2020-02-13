@@ -158,7 +158,7 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
   // we replicate enough of the region from PBC necessary to perform calculations
   double skin = 2.5;
   size_t header = 5;
-  int n = 1;
+  long n = 1;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist, ydist, zdist,
       variance;
   double diff_sqrd = 0;
@@ -292,7 +292,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   PointCloud<num_t> cloud;
   double skin = 2.5;
   size_t header = 5;
-  int n = 1;
+  long n = 1;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
       dist, variance;
   double diff_sqrd = 0;
