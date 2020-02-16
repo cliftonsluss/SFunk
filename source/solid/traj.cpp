@@ -156,7 +156,7 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
   // units are Angstroms
   // Instead of the minimum image criterium which won't work for KDtree
   // we replicate enough of the region from PBC necessary to perform calculations
-  double skin = 2.5;
+  double skin = 5.0;
   size_t header = 5;
   long n = 1;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist, ydist, zdist,
@@ -290,7 +290,7 @@ template <typename num_t>
 void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs) {
   PointCloud<num_t> cloud;
-  double skin = 2.5;
+  double skin = 5.0;
   size_t header = 5;
   size_t n = 1;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
@@ -301,6 +301,8 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   Trajectory traj(filename, N, header);
   simFrame<num_t> frame;
   //std::cout << "populating point cloud" << std::endl;
+  // we are using the average positions of the atoms from all of the frames to
+  // generate a nearest neighbor list
   populatePointCloudPBC(cloud, avg_frame, skin);
   typedef KDTreeSingleIndexAdaptor<
    NN_Adaptor<num_t, PointCloud<num_t> >,
@@ -324,20 +326,29 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
     {
     std::vector<size_t> ret_index(num_results);
     std::vector<num_t> out_dist(num_results);
+    // knnSearch returns size_t resultSet.size()
     num_results = index.knnSearch(&query_pt[0], num_results, &ret_index[0],
         &out_dist[0]);
     ret_index.resize(num_results);
     out_dist.resize(num_results);
     // downselect neighbors and restore indexes from skin map
     // count number of actual neighbors
+    // std::cout << "atom index, number of neighbors= " << j << ", " << num_results << std::endl;
     for (size_t k = 0; k < num_results; k++) {
+      // std::cout << "neighbor count " << nbs << std::endl;
       neigh_idx = ret_index[k];
+      // for any given neighbor index (neigh_idx) that is greater than the
+      // current atom's index (idx) we want to add it to the list of neighbor
+      // indexs (neigh_idxs) the greater than condition ensures we don't include
+      // duplicate pairs
       if (neigh_idx > idx) {
         // is the neighbor index found in the skin map
 	      if (cloud.pbc_idx_map.find(neigh_idx) != cloud.pbc_idx_map.end()) {
 	        if (cloud.pbc_idx_map[neigh_idx] > idx) {
 	          idxs.push_back(idx);
+            // std::cout << "index " << idx << std::endl;
 	          neigh_idxs.push_back(cloud.pbc_idx_map[neigh_idx]);
+            // std::cout << "neighbor index " << neigh_idx << std::endl;
             //std::cout << idx << ", " << cloud.pbc_idx_map[neigh_idx] << std::endl;
             //std::cout << idxs[nbs] << ", " << neigh_idxs[nbs] << std::endl;
             nbs++;
@@ -347,7 +358,9 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
         // can be stored as is
 	      else {
 	        idxs.push_back(idx);
+          // std::cout << "index " << idx << std::endl;
 	        neigh_idxs.push_back(neigh_idx);
+          // std::cout << "neighbor index " << neigh_idx << std::endl;
           //std::cout << idx << ", " << neigh_idx << std::endl;
           //std::cout << idxs[nbs] << ", " << neigh_idxs[nbs] << std::endl;
 	        nbs++;
@@ -356,14 +369,17 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
     }
     }
   }
+  std::cout << "neighbor count " << nbs << std::endl;
   traj.skipFrames(num_skipframes);
   for (size_t i = 0; i < num_frames; i++) {
     traj.getNextFrame(frame);
+    // std::cout << "frame number = " << i << std::endl;
     xlen = frame.xbox.max - frame.xbox.min;
     ylen = frame.ybox.max - frame.ybox.min;
     zlen = frame.zbox.max - frame.zbox.min;
+    // std::cout << "nbs = " << nbs << std::endl;
     for (size_t k = 0; k < nbs; k++) {
-      // grab out reference point x,y,z coordinates and coordinates of it's
+      // grab our reference point x,y,z coordinates and coordinates of it's
       // neighbors
       xa = frame.pts[idxs[k]].x;
       xb = frame.pts[neigh_idxs[k]].x;
@@ -396,6 +412,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
       ydist_2 = pow((ya-yb),2.0);
       zdist_2 = pow((za-zb),2.0);
       dist = pow(xdist_2 + ydist_2 + zdist_2, 0.5);
+      // std::cout << "atom " <<
       old_avg = avg;
       avg = old_avg + (dist - old_avg)/n;
       // diff_sqrd/(n-1) will be our variance
@@ -407,19 +424,26 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   variance = diff_sqrd/(n-1);
   std::cout << "n pairs= " << n << std::endl;
   std::cout << "variance01= " << variance << std::endl;
-  // std::cout << "std01= " << pow(variance, 0.5) << std::endl;
+  std::cout << "std01= " << pow(variance, 0.5) << std::endl;
 }
+
 int main(int argc, char *argv[]) {
   // read parameters from json file
   std::map<std::string,std::string> config_map;
   std::string config_file = argv[1];
+  std::cout << "Reading configuration file..." << std::endl;
   Read_config config(config_file, config_map);
   config.get_config();
   int num_nbs = config.j["neighbors"];
+  std::cout << num_nbs << " nearest neighbors" << std::endl;
   int num_atoms = config.j["atoms"];
+  std::cout << num_atoms << " atoms" << std::endl;
   int num_frames = config.j["frames"];
+  std::cout << num_frames << " frames" << std::endl;
   int num_skipframes = config.j["skipframes"];
+  std::cout << "Skipping " << num_skipframes << " frames" << std::endl;
   std::string datafile = config.j["datafile"];
+  std::cout << "Reading data from " << datafile << std::endl;
 
 
 //lines below should all remove // to uncomment
@@ -429,11 +453,12 @@ resultSet<double> results;
 // only results.avg is needed from variance00WK at thi point, that functionality
 // will be broken out into a more compact method at a later date
 variance00WK<double>(datafile, num_atoms, num_frames, num_skipframes, results);
+// values below not needed anymore but still being reported for reference
+std::cout << "variance00= " << results.variance << std::endl;
+std::cout << "std00= " << pow(results.variance,0.5) << std::endl;
+
 variance01kd_r<double>(datafile, results.avg, num_atoms, num_frames, num_skipframes, num_nbs);
 // variance01kd<double>(datafile, results.avg, num_atoms, num_frames, num_skipframes, num_nbs);
 
-// values below not needed anymore but still being reported for reference for now
-std::cout << "variance00= " << results.variance << std::endl;
-std::cout << "std00= " << pow(results.variance,0.5) << std::endl;
 return 0;
 }

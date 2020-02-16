@@ -143,7 +143,7 @@ template <typename T>
 // scaled means that fractional coordinates have been converted to
 // full value cartesian coordinates
 void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
-    double skin, bool scaled = false, const T max_range = 10) {
+    double skin, bool scaled = true, const T max_range = 10) {
   // calculate our box widths
   double xlen = frame.xbox.max - frame.xbox.min;
   double ylen = frame.ybox.max - frame.ybox.min;
@@ -359,14 +359,14 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
     }
   }
   // what is this bit here? ah, we're returning to fractional coordinates
-  double xfac = 1.0/(result.avg.xbox.max - result.avg.xbox.min);
-  double yfac = 1.0/(result.avg.ybox.max - result.avg.ybox.min);
-  double zfac = 1.0/(result.avg.zbox.max - result.avg.zbox.min);
-  for (int i = 0; i < num_atoms; i++) {
-    result.avg.pts[i].x = (result.avg.pts[i].x - result.avg.xbox.min)*xfac;
-    result.avg.pts[i].y = (result.avg.pts[i].y - result.avg.ybox.min)*yfac;
-    result.avg.pts[i].z = (result.avg.pts[i].z - result.avg.zbox.min)*zfac;
-  }
+  // double xfac = 1.0/(result.avg.xbox.max - result.avg.xbox.min);
+  // double yfac = 1.0/(result.avg.ybox.max - result.avg.ybox.min);
+  // double zfac = 1.0/(result.avg.zbox.max - result.avg.zbox.min);
+  // for (int i = 0; i < num_atoms; i++) {
+  //   result.avg.pts[i].x = (result.avg.pts[i].x - result.avg.xbox.min)*xfac;
+  //   result.avg.pts[i].y = (result.avg.pts[i].y - result.avg.ybox.min)*yfac;
+  //   result.avg.pts[i].z = (result.avg.pts[i].z - result.avg.zbox.min)*zfac;
+  // }
 
   diff_sqrd = diff_sqrd/num_atoms;
   nsamples = num_frames*3.0;
