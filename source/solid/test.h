@@ -253,6 +253,54 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
   }
 }
 
+class RunningStat
+{
+  public:
+    RunningStat() : m_n(0) {}
+    void Clear()
+    {
+      m_n = 0;
+    }
+    void Push(double x)
+    {
+      m_n++;
+      // See Knuth TAOCP vol 2, 3rd edition, page 232
+      if (m_n == 1)
+      {
+        m_oldM = m_newM = x;
+        m_oldS = 0.0;
+      }
+      else
+      {
+        m_newM = m_oldM + (x - m_oldM)/m_n;
+        m_newS = m_oldS + (x - m_oldM)*(x - m_newM);
+        // set up for next iteration
+        m_oldM = m_newM;
+        m_oldS = m_newS;
+      }
+    }
+    int NumDataValues() const
+    {
+      return m_n;
+    }
+    double Mean() const
+    {
+      return (m_n > 0) ? m_newM : 0.0;
+    }
+    double Variance() const
+    {
+      return ( (m_n > 1) ? m_newS/(m_n - 1) : 0.0 );
+    }
+    double StandardDeviation() const
+    {
+      return sqrt( Variance() );
+    }
+
+  private:
+    int m_n;
+    double m_oldM, m_newM, m_oldS, m_newS;
+};
+
 
 
 class Trajectory;
@@ -329,15 +377,30 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
       if ((za - zb) > (zlen*0.5)){
 	zb = zb + zlen;
       }
-      old_avgx = result.avg.pts[j].x;
-      old_avgy = result.avg.pts[j].y;
-      old_avgz = result.avg.pts[j].z;
-      result.avg.pts[j].x = old_avgx + (xb - result.avg.pts[j].x)/i;
-      result.avg.pts[j].y = old_avgy + (yb - result.avg.pts[j].y)/i;
-      result.avg.pts[j].z = old_avgz + (zb - result.avg.pts[j].z)/i;
-      diff_sqrd = diff_sqrd + ((xb - old_avgx)*(xb - result.avg.pts[j].x)
-	        + (yb - old_avgy)*(yb - result.avg.pts[j].y)
-          + (zb - old_avgz)*(zb - result.avg.pts[j].z));
+      // old_avgx = result.avg.pts[j].x;
+      // old_avgy = result.avg.pts[j].y;
+      // old_avgz = result.avg.pts[j].z;
+      // result.avg.pts[j].x = old_avgx + (xb - result.avg.pts[j].x)/i;
+      // result.avg.pts[j].y = old_avgy + (yb - result.avg.pts[j].y)/i;
+      // result.avg.pts[j].z = old_avgz + (zb - result.avg.pts[j].z)/i;
+      // diff_sqrd = diff_sqrd + ((xb - old_avgx)*(xb - result.avg.pts[j].x)
+	    //     + (yb - old_avgy)*(yb - result.avg.pts[j].y)
+      //     + (zb - old_avgz)*(zb - result.avg.pts[j].z));
+
+      // the commented out section abov eand the 9 new lines below short circuit
+      // original intent of this method but provide a proper Welford running avg
+      RunningStat rsx;
+      RunningStat rsy;
+      RunningStat rsz;
+
+      rsx.Push(xb);
+      rsy.Push(yb);
+      rsz.Push(zb);
+
+      result.avg.pts[j].x = rsx.Mean();
+      result.avg.pts[j].y = rsy.Mean();
+      result.avg.pts[j].z = rsz.Mean();
+
       if (result.avg.pts[j].x < result.avg.xbox.min) {
 	result.avg.xbox.min = result.avg.pts[j].x;
       }
@@ -373,6 +436,8 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
   result.variance = diff_sqrd/(nsamples-1);
   return;
 }
+
+
 
 
 #endif
