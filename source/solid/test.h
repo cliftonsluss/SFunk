@@ -377,31 +377,31 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
       if ((za - zb) > (zlen*0.5)){
 	      zb = zb + zlen;
       }
-      // old_avgx = result.avg.pts[j].x;
-      // old_avgy = result.avg.pts[j].y;
-      // old_avgz = result.avg.pts[j].z;
-      // result.avg.pts[j].x = old_avgx + (xb - result.avg.pts[j].x)/i;
-      // result.avg.pts[j].y = old_avgy + (yb - result.avg.pts[j].y)/i;
-      // result.avg.pts[j].z = old_avgz + (zb - result.avg.pts[j].z)/i;
-      // diff_sqrd = diff_sqrd + ((xb - old_avgx)*(xb - result.avg.pts[j].x)
-	    //     + (yb - old_avgy)*(yb - result.avg.pts[j].y)
-      //     + (zb - old_avgz)*(zb - result.avg.pts[j].z));
+      old_avgx = result.avg.pts[j].x;
+      old_avgy = result.avg.pts[j].y;
+      old_avgz = result.avg.pts[j].z;
+      result.avg.pts[j].x = old_avgx + (xb - result.avg.pts[j].x)/i;
+      result.avg.pts[j].y = old_avgy + (yb - result.avg.pts[j].y)/i;
+      result.avg.pts[j].z = old_avgz + (zb - result.avg.pts[j].z)/i;
+      diff_sqrd = diff_sqrd + ((xb - old_avgx)*(xb - result.avg.pts[j].x)
+	        + (yb - old_avgy)*(yb - result.avg.pts[j].y)
+          + (zb - old_avgz)*(zb - result.avg.pts[j].z));
 
       // the commented out section abov eand the 10 new lines below short circuit
       // original intent of this method but provide a proper Welford running avg
-      RunningStat rsx;
-      RunningStat rsy;
-      RunningStat rsz;
-
-      rsx.Push(xb);
-      rsy.Push(yb);
-      rsz.Push(zb);
-
-      result.avg.pts[j].x = rsx.Mean();
-      result.avg.pts[j].y = rsy.Mean();
-      result.avg.pts[j].z = rsz.Mean();
-
-      result.variance = rsx.Variance();
+      // RunningStat rsx;
+      // RunningStat rsy;
+      // RunningStat rsz;
+      //
+      // rsx.Push(xb);
+      // rsy.Push(yb);
+      // rsz.Push(zb);
+      //
+      // result.avg.pts[j].x = rsx.Mean();
+      // result.avg.pts[j].y = rsy.Mean();
+      // result.avg.pts[j].z = rsz.Mean();
+      //
+      // result.variance = rsx.Variance();
 
 
       // result.variance = pow(pow(rsx.Variance(),2) + pow(rsy.Variance(),2)
@@ -439,7 +439,7 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
 
   diff_sqrd = diff_sqrd/num_atoms;
   nsamples = num_frames*3.0;
-  // result.variance = diff_sqrd/(nsamples-1);
+  result.variance = diff_sqrd/(nsamples-1);
 
 
   return;
