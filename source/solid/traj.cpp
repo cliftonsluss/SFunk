@@ -228,6 +228,7 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
   }
   // armed with a neighbor list based on an average frame, we calculate the
   // neighbor distances
+  RunningStat rs;
   traj.skipFrames(num_skipframes);
   for (int i = 0; i < num_frames; i++) {
     traj.getNextFrame(frame);
@@ -266,25 +267,31 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
       zdist = std::abs(za-zb);
   // below is an implementation of the Welford method of running statistics
   // extended to 3 dimensions, all dimensions are summed into one dimension
-      old_avg = avg;
-      avg = old_avg + (xdist - old_avg)/n;
-      diff_sqrd = diff_sqrd + ((xdist - old_avg)*(xdist - avg));
-      n++;
-      old_avg = avg;
-      avg = old_avg + (ydist - old_avg)/n;
-      diff_sqrd = diff_sqrd + ((ydist - old_avg)*(ydist - avg));
-      n++;
-      old_avg = avg;
-      avg = old_avg + (zdist - old_avg)/n;
-      diff_sqrd = diff_sqrd + ((zdist - old_avg)*(zdist - avg));
-      n++;
+      // old_avg = avg;
+      // avg = old_avg + (xdist - old_avg)/n;
+      // diff_sqrd = diff_sqrd + ((xdist - old_avg)*(xdist - avg));
+      // n++;
+      // old_avg = avg;
+      // avg = old_avg + (ydist - old_avg)/n;
+      // diff_sqrd = diff_sqrd + ((ydist - old_avg)*(ydist - avg));
+      // n++;
+      // old_avg = avg;
+      // avg = old_avg + (zdist - old_avg)/n;
+      // diff_sqrd = diff_sqrd + ((zdist - old_avg)*(zdist - avg));
+      // n++;
+      rs.Push(xdist);
+      rs.Push(ydist);
+      rs.Push(zdist);
+
     }
   }
-  std::cout << "average= " << avg << std::endl;
-  variance = diff_sqrd/(n-1);
-  std::cout << "n pairs= " << n << std::endl;
-  std::cout << "variance01= " << variance << std::endl;
-  std::cout << "std01= " << pow(variance, 0.5) << std::endl;
+  // std::cout << "average= " << avg << std::endl;
+  std::cout << "average= " << rs.Mean() << std::endl;
+  // variance = diff_sqrd/(n-1);
+  // std::cout << "n pairs= " << n << std::endl;
+  // std::cout << "variance01= " << variance << std::endl;
+  std::cout << "variance01= " << rs.Variance() << std::endl;
+  std::cout << "std01= " << pow(rs.Variance(), 0.5) << std::endl;
 }
 template <typename num_t>
 void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,

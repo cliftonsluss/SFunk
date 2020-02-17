@@ -360,22 +360,22 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
       za = frame0.pts[j].z;
       zb = frame.pts[j].z;
       if ((xa - xb) < (-xlen*0.5)){
-	xb = xb - xlen;
+	      xb = xb - xlen;
       }
       if ((xa - xb) > (xlen*0.5)){
-	xb = xb + xlen;
+	      xb = xb + xlen;
       }
       if ((ya - yb) < (-ylen*0.5)){
-	yb = yb - ylen;
+	      yb = yb - ylen;
       }
       if ((ya - yb) > (ylen*0.5)){
-	yb = yb + ylen;
+	      yb = yb + ylen;
       }
       if ((za - zb) < (-zlen*0.5)){
-	zb = zb - zlen;
+	      zb = zb - zlen;
       }
       if ((za - zb) > (zlen*0.5)){
-	zb = zb + zlen;
+	      zb = zb + zlen;
       }
       // old_avgx = result.avg.pts[j].x;
       // old_avgy = result.avg.pts[j].y;
@@ -387,7 +387,7 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
 	    //     + (yb - old_avgy)*(yb - result.avg.pts[j].y)
       //     + (zb - old_avgz)*(zb - result.avg.pts[j].z));
 
-      // the commented out section abov eand the 9 new lines below short circuit
+      // the commented out section abov eand the 10 new lines below short circuit
       // original intent of this method but provide a proper Welford running avg
       RunningStat rsx;
       RunningStat rsy;
@@ -400,6 +400,12 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
       result.avg.pts[j].x = rsx.Mean();
       result.avg.pts[j].y = rsy.Mean();
       result.avg.pts[j].z = rsz.Mean();
+
+      result.variance = rsx.Variance();
+
+
+      // result.variance = pow(pow(rsx.Variance(),2) + pow(rsy.Variance(),2)
+          // + pow(rsz.Variance(),2), 0.5);
 
       if (result.avg.pts[j].x < result.avg.xbox.min) {
 	result.avg.xbox.min = result.avg.pts[j].x;
@@ -433,7 +439,9 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
 
   diff_sqrd = diff_sqrd/num_atoms;
   nsamples = num_frames*3.0;
-  result.variance = diff_sqrd/(nsamples-1);
+  // result.variance = diff_sqrd/(nsamples-1);
+
+
   return;
 }
 
