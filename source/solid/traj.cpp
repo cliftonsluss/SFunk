@@ -422,21 +422,21 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
       dist = pow(xdist_2 + ydist_2 + zdist_2, 0.5);
       // std::cout << "atom " <<
 
-      rs.Push(dist);
+      // rs.Push(dist);
 
-      // old_avg = avg;
-      // avg = old_avg + (dist - old_avg)/n;
-      // // diff_sqrd/(n-1) will be our variance
-      // diff_sqrd = diff_sqrd + (dist - old_avg)*(dist - avg);
-      // n++;
+      old_avg = avg;
+      avg = old_avg + (dist - old_avg)/n;
+      // diff_sqrd/(n-1) will be our variance
+      diff_sqrd = diff_sqrd + (dist - old_avg)*(dist - avg);
+      n++;
     }
   }
-  // std::cout << "average= " << avg << std::endl;
-  std::cout << "average= " << rs.Mean() << std::endl;
-  // variance = diff_sqrd/(n-1);
-  // std::cout << "n pairs= " << n << std::endl;
-  // std::cout << "variance01= " << variance << std::endl;
-  std::cout << "variance01= " << rs.Variance() << std::endl;
+  std::cout << "average= " << avg << std::endl;
+  // std::cout << "average= " << rs.Mean() << std::endl;
+  variance = diff_sqrd/(n-1);
+  std::cout << "n pairs= " << n << std::endl;
+  std::cout << "variance01= " << variance << std::endl;
+  // std::cout << "variance01= " << rs.Variance() << std::endl;
   // std::cout << "std01= " << pow(variance, 0.5) << std::endl;
 }
 
