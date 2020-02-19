@@ -79,8 +79,8 @@ struct PointCloud
 	};
 
 	std::vector<Atom>  atms;
-        std::vector<int> sphere_list;
-        int count;
+  std::vector<int> sphere_list;
+  int count;
 
 	struct Bounds {
 	  double min,max;
@@ -90,6 +90,7 @@ struct PointCloud
 
 	std::map<int,int> pbc_idx_map;
 
+  // everything below is the stock point cloud from nanoflann
 	// Must return the number of data points
 	inline size_t kdtree_get_point_count() const { return pts.size(); }
 
@@ -158,6 +159,7 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
   double z_thresh_max = frame.zbox.max - skin;
   cloud.pts.resize(frame.num_atoms);
   if (scaled) {
+    std::cout << "reading full scaled atom positions into point cloud" << std::endl;
   // getNextFrame rescales these so if feeding frames from getNextFrame into
   // populatePointCloudPBC make sure to set scaled = true
     for (int i = 0; i < frame.num_atoms; i++){
@@ -179,8 +181,13 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
   cloud.count = frame.num_atoms;
   // pad outside of cloud to mimic periodic boundary conditions
   // and create map of added indexes back to original indexes
+  // pbc_idx is the index of an atom at it's position in the skin
+  // a map of key:value pairs is created with pbc_idx as the key and the
+  // original index as the value. Any time an atom is added to the skin more
+  // than once it's new pbc_idx is added to pbc_idx_map as the key and the value
+  // stored at the last previous pbc_idx is stored as the value.
   int pbc_idx = cloud.count;
-  // first we add padding to boundaries in x direction
+  // first we add padding to boundaries in x
   for (int i = 0; i < cloud.count; i++) {
     if (cloud.pts[i].x > x_thresh_max) {
       cloud.pts.push_back({cloud.pts[i].x - xlen, cloud.pts[i].y, cloud.pts[i].z});
@@ -200,7 +207,7 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
   for (int i =0; i < cloud.count; i++) {
     if (cloud.pts[i].y > y_thresh_max) {
       cloud.pts.push_back({cloud.pts[i].x, cloud.pts[i].y - ylen, cloud.pts[i].z});
-  // if this point has alrady been remapped, just the map the new reference to
+  // if this point has already been remapped, just map the new reference to
   // the previously mapped point
       if (cloud.pbc_idx_map.find(i) != cloud.pbc_idx_map.end()) {
 	      cloud.pbc_idx_map[pbc_idx] = cloud.pbc_idx_map[i];
@@ -215,12 +222,12 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
     if (cloud.pts[i].y < y_thresh_min) {
       cloud.pts.push_back({cloud.pts[i].x, cloud.pts[i].y + ylen, cloud.pts[i].z});
       if (cloud.pbc_idx_map.find(i) != cloud.pbc_idx_map.end()) {
-	cloud.pbc_idx_map[pbc_idx] = cloud.pbc_idx_map[i];
-	pbc_idx++;
+	      cloud.pbc_idx_map[pbc_idx] = cloud.pbc_idx_map[i];
+	      pbc_idx++;
       }
       else {
-	cloud.pbc_idx_map[pbc_idx] = i;
-	pbc_idx++;
+	      cloud.pbc_idx_map[pbc_idx] = i;
+	      pbc_idx++;
       }
     }
   }
@@ -246,11 +253,13 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
 	pbc_idx++;
       }
       else {
-	cloud.pbc_idx_map[pbc_idx] = 1;
+	cloud.pbc_idx_map[pbc_idx] = i;
 	pbc_idx++;
       }
     }
   }
+  std::cout << cloud.pbc_idx_map.size() << " atoms in padding" << std::endl;
+  std::cout << "pbc_idx = " << pbc_idx << std::endl;
 }
 
 class RunningStat

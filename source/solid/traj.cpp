@@ -297,7 +297,7 @@ template <typename num_t>
 void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs) {
   PointCloud<num_t> cloud;
-  double skin = 5.0;
+  double skin = 4.0;
   size_t header = 5;
   size_t n = 1;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
@@ -310,12 +310,15 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   //std::cout << "populating point cloud" << std::endl;
   // we are using the average positions of the atoms from all of the frames to
   // generate a nearest neighbor list
+  // populate point cloud with average frame
   populatePointCloudPBC(cloud, avg_frame, skin);
+  // set up KDtree adaptor
   typedef KDTreeSingleIndexAdaptor<
    NN_Adaptor<num_t, PointCloud<num_t> >,
    PointCloud<num_t>,
    3
    > my_kd_tree_t;
+  // create an index for our adaptor
   my_kd_tree_t index(3, cloud, KDTreeSingleIndexAdaptorParams(10) );
   //std::cout << "building point cloud" << std::endl;
   index.buildIndex();
@@ -325,6 +328,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   size_t nbs = 0;
   std::vector<double> idxs;
   std::vector<double> neigh_idxs;
+  // we will use each atom as a query point to find nearest neighbors
   for (size_t j = 0; j < N; j++)
   {
     idx = j;
@@ -333,7 +337,8 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
     {
     std::vector<size_t> ret_index(num_results);
     std::vector<num_t> out_dist(num_results);
-    // knnSearch returns size_t resultSet.size()
+    // knnSearch returns size_t resultSet.size() num_results is the number of
+    // neighbors we requested for this U.C. type
     num_results = index.knnSearch(&query_pt[0], num_results, &ret_index[0],
         &out_dist[0]);
     ret_index.resize(num_results);
