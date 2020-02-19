@@ -440,6 +440,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   std::cout << "average= " << rs.Mean() << std::endl;
   // variance = diff_sqrd/(n-1);
   // std::cout << "n pairs= " << n << std::endl;
+  std::cout << "number of pairs= " << rs.NumDataValues() << std::endl;
   // std::cout << "variance01= " << variance << std::endl;
   std::cout << "variance01= " << rs.Variance() << std::endl;
   // std::cout << "std01= " << pow(variance, 0.5) << std::endl;
