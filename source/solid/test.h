@@ -288,7 +288,7 @@ class RunningStat
         m_oldS = m_newS;
       }
     }
-    int NumDataValues() const
+    size_t NumDataValues() const
     {
       return m_n;
     }
