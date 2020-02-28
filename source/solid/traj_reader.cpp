@@ -50,5 +50,5 @@ void Trajectory::skipFrames(const size_t sframes) {
     getline(inputfile, temp);
   }
   // statement below lets us check skipFrames functionality
-  std::cout << temp << '\n';
+  // std::cout << temp << '\n';
 }

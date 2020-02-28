@@ -10,19 +10,22 @@ using json = nlohmann::json;
 
 class Read_config {
   public:
-    Read_config(std::string &config_file,
-                std::map<std::string, std::string> &config_map);
-      void get_config();
+    Read_config(std::string &config_file);
+                // std::map<std::string, std::string> &config_map);
+    void get_config();
+    json j;
 
   private:
     // std::ifstream config_file;
-    std::map<std::string, std::string> config_map;
+    // std::map<std::string, std::string> config_map;
     std::string config_file;
 
-  public:
-    json j;
+  // public:
+  //   json j;
 
 };
+
+
 
 
 #endif

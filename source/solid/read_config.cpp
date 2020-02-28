@@ -4,11 +4,11 @@
 #include <map>
 #include "read_config.h"
 
-Read_config::Read_config(std::string &config_file,
-       std::map<std::string,std::string> &config_map) {
+Read_config::Read_config(std::string &config_file){
+       // std::map<std::string,std::string> &config_map) {
   // Read_config::config_file.open(config_file, &std::ifstream::in);
   Read_config::config_file = config_file;
-  Read_config::config_map = config_map;
+  // Read_config::config_map = config_map;
 }
 
 
