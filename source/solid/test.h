@@ -711,7 +711,7 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
 template <typename num_t>
 void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs,
-    size_t &nbs_found, float &variance01) {
+    size_t &nbs_found, float &variance01, std::vector<num_t> &variance_vector) {
   PointCloud<num_t> cloud;
   double skin = 4.0;
   size_t header = 5;
@@ -843,6 +843,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
       dist = pow(xdist_2 + ydist_2 + zdist_2, 0.5);
 
       rs.Push(dist);
+      variance_vector.push_back(rs.Variance());
     }
   }
   // std::cout << "average= " << avg << std::endl;

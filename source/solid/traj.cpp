@@ -40,11 +40,15 @@ std::cout << "std00= " << pow(results.variance,0.5) << std::endl;
 
 size_t nbs_found;
 float variance01;
+std::vector<double> var_vec;
 
 variance01kd_r<double>(datafile, results.avg, num_atoms, num_frames,
-  num_skipframes, num_nbs, nbs_found, variance01);
+  num_skipframes, num_nbs, nbs_found, variance01, var_vec);
 std::cout << "neighbor count= " << nbs_found << std::endl;
 std::cout << "variance01= " << variance01 << std::endl;
 std::cout << "std01= " << pow(variance01,0.5) << std::endl;
+for (size_t i = 0; i < var_vec.size(); i++){
+  std::cout << i+1.0 << ", " << var_vec[i] << std::endl;
+}
 return 0;
 }
