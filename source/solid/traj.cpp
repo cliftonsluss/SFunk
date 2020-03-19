@@ -25,6 +25,8 @@ int main(int argc, char *argv[]) {
   std::cout << "Skipping " << num_skipframes << " frames" << std::endl;
   std::string datafile = config.j["datafile"];
   std::cout << "Reading data from " << datafile << std::endl;
+  std::string outfile = config.j["outfile"];
+  int dump = config.j["dump"];
 
 
 //lines below should all remove // to uncomment
@@ -43,7 +45,7 @@ float variance01;
 std::vector<double> var_vec;
 
 variance01kd_r<double>(datafile, results.avg, num_atoms, num_frames,
-  num_skipframes, num_nbs, nbs_found, variance01, var_vec);
+  num_skipframes, num_nbs, nbs_found, variance01, outfile, dump);
 std::cout << "neighbor count= " << nbs_found << std::endl;
 std::cout << "variance01= " << variance01 << std::endl;
 std::cout << "std01= " << pow(variance01,0.5) << std::endl;

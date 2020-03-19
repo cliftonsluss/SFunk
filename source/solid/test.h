@@ -711,8 +711,16 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
 template <typename num_t>
 void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs,
-    size_t &nbs_found, float &variance01, std::vector<num_t> &variance_vector) {
+    size_t &nbs_found, float &variance01, const std::string &outfile= std::string(),
+    int dump=0) {
   PointCloud<num_t> cloud;
+  if (!outfile.empty()) {
+    std::ofstream var_out;
+    var_out.open(outfile);
+    var_out << "npairs\t   variance\n";
+    var_out.close();
+  }
+
   double skin = 4.0;
   size_t header = 5;
   size_t n = 1;
@@ -843,7 +851,18 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
       dist = pow(xdist_2 + ydist_2 + zdist_2, 0.5);
 
       rs.Push(dist);
-      variance_vector.push_back(rs.Variance());
+
+      if (dump > 0) {
+        if (rs.NumDataValues() % dump == 0) {
+          std::ofstream var_out;
+          var_out.open(outfile, std::ofstream::app);
+          var_out << rs.NumDataValues() << " " <<  rs.Variance() << "\n";
+          var_out.close();
+        }
+      }
+
+      // variance_vector.push_back(rs.Variance());
+
     }
   }
   // std::cout << "average= " << avg << std::endl;
