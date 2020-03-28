@@ -312,6 +312,17 @@ class RunningStat
     float m_oldM, m_newM, m_oldS, m_newS;
 };
 
+// class KefferStat
+// {
+// public:
+//   KefferStat() : m_n(0) {}
+//   void Clear()
+//   {
+//     m_n = 0;
+//   }
+//   void Push(float )
+// };
+
 
 
 class Trajectory;
@@ -664,7 +675,7 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
     xlen = frame.xbox.max - frame.xbox.min;
     ylen = frame.ybox.max - frame.ybox.min;
     zlen = frame.zbox.max - frame.zbox.min;
-  // grab our neighbors and apply minimum image criterium
+  // grab our neighbors and apply minimum image convention
     for (size_t k = 0; k < nbs; k++) {
       xa = frame.pts[idxs[k]].x;
       xb = frame.pts[neigh_idxs[k]].x;
@@ -711,8 +722,8 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
 template <typename num_t>
 void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs,
-    size_t &nbs_found, float &variance01, const std::string &outfile= std::string(),
-    int dump=0) {
+    size_t &nbs_found, float &variance01, std::string &outfile,
+    std::string &style, int dump=0) {
   PointCloud<num_t> cloud;
   if (!outfile.empty()) {
     std::ofstream var_out;
