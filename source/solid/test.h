@@ -723,7 +723,7 @@ template <typename num_t>
 void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs,
     size_t &nbs_found, float &variance01, std::string &outfile,
-    std::string &style, int dump=0) {
+    std::string &style, int dump=0, float error=0.0001) {
   PointCloud<num_t> cloud;
   if (!outfile.empty()) {
     std::ofstream var_out;
@@ -735,11 +735,12 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   double skin = 4.0;
   size_t header = 5;
   size_t n = 1;
-  double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
+  float xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
       dist, variance;
-  double diff_sqrd = 0;
-  double old_avg = 0;
-  double avg = 0;
+  float diff_sqrd = 0;
+  float old_avg = 0;
+  float avg = 0;
+  float var_check;
   Trajectory traj(filename, N, header);
   simFrame<num_t> frame;
   //std::cout << "populating point cloud" << std::endl;
@@ -761,6 +762,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   size_t idx;
   size_t neigh_idx;
   size_t nbs = 0;
+  size_t min_count = 100;
   std::vector<double> idxs;
   std::vector<double> neigh_idxs;
   // we will use each atom as a query point to find nearest neighbors
@@ -861,7 +863,18 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
       zdist_2 = pow((za-zb),2.0);
       dist = pow(xdist_2 + ydist_2 + zdist_2, 0.5);
 
+      var_check = rs.Variance();
       rs.Push(dist);
+      // if (rs.NumDataValues() > min_count){
+      //   if (std::abs(var_check - rs.Variance()) < error){
+      //     nbs_found = rs.NumDataValues();
+      //     variance01 = rs.Variance();
+      //     std::cout << "Achieved minimum error with " << nbs_found << " pairs\n";
+      //     std::cout << "variance = " << rs.Variance() << "\n";
+      //     return;
+      //   }
+      // }
+
 
       if (dump > 0) {
         if (rs.NumDataValues() % dump == 0) {
