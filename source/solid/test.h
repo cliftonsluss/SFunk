@@ -723,7 +723,7 @@ template <typename num_t>
 void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs,
     size_t &nbs_found, float &variance01, std::string &outfile,
-    std::string &style, int dump=0, float error=0.0001) {
+    int dump=0, float error=0.0001) {
   PointCloud<num_t> cloud;
   if (!outfile.empty()) {
     std::ofstream var_out;
@@ -735,12 +735,12 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   double skin = 4.0;
   size_t header = 5;
   size_t n = 1;
-  float xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
+  double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
       dist, variance;
-  float diff_sqrd = 0;
-  float old_avg = 0;
-  float avg = 0;
-  float var_check;
+  double diff_sqrd = 0;
+  double old_avg = 0;
+  double avg = 0;
+  double var_check;
   Trajectory traj(filename, N, header);
   simFrame<num_t> frame;
   //std::cout << "populating point cloud" << std::endl;
