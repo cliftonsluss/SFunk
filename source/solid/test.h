@@ -272,7 +272,7 @@ class RunningStat
     {
       m_n = 0;
     }
-    void Push(float x)
+    void Push(double x)
     {
       m_n++;
       // See Knuth TAOCP vol 2, 3rd edition, page 232
@@ -294,22 +294,22 @@ class RunningStat
     {
       return m_n;
     }
-    float Mean() const
+    double Mean() const
     {
       return (m_n > 0) ? m_newM : 0.0;
     }
-    float Variance() const
+    double Variance() const
     {
       return ( (m_n > 1) ? m_newS/(m_n - 1) : 0.0 );
     }
-    float StandardDeviation() const
+    double StandardDeviation() const
     {
       return sqrt( Variance() );
     }
 
   private:
     size_t m_n;
-    float m_oldM, m_newM, m_oldS, m_newS;
+    double m_oldM, m_newM, m_oldS, m_newS;
 };
 
 // class KefferStat
