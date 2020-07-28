@@ -357,6 +357,7 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
   diff_sqrd = 0;
   double div_3 = 1.0/3.0;
 
+  RunningStat rs;
   for (int i = 1; i < num_frames; i++) {
     traj.getNextFrame(frame);
     xlen = frame.xbox.max - frame.xbox.min;
@@ -388,6 +389,12 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
       if ((za - zb) > (zlen*0.5)){
 	      zb = zb + zlen;
       }
+
+
+
+
+
+
       old_avgx = result.avg.pts[j].x;
       old_avgy = result.avg.pts[j].y;
       old_avgz = result.avg.pts[j].z;
@@ -418,6 +425,8 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
       }
     }
   }
+
+
   // what is this bit here? ah, we're returning to fractional coordinates
   // double xfac = 1.0/(result.avg.xbox.max - result.avg.xbox.min);
   // double yfac = 1.0/(result.avg.ybox.max - result.avg.ybox.min);
@@ -451,6 +460,8 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
 //   std::vector<double> out = {mean, stdev};
 //   return out;
 // }
+
+
 template <typename num_t>
 void NNeighbors(std::string &filename, const size_t N, const int num_frames,
     const int num_nbs) {
@@ -721,7 +732,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
     var_out.close();
   }
 
-  double skin = 6.0;
+  double skin = 5.0;
   size_t header = 5;
   size_t n = 1;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
