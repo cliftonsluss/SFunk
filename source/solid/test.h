@@ -312,17 +312,6 @@ class RunningStat
     double m_oldM, m_newM, m_oldS, m_newS;
 };
 
-// class KefferStat
-// {
-// public:
-//   KefferStat() : m_n(0) {}
-//   void Clear()
-//   {
-//     m_n = 0;
-//   }
-//   void Push(float )
-// };
-
 
 
 class Trajectory;
@@ -722,7 +711,7 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
 template <typename num_t>
 void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs,
-    size_t &nbs_found, float &variance01, std::string &outfile,
+    size_t &nbs_found, double &variance01, std::string &outfile,
     int dump=0, float error=0.0001) {
   PointCloud<num_t> cloud;
   if (!outfile.empty()) {

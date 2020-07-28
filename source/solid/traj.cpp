@@ -41,7 +41,7 @@ std::cout << "variance00= " << results.variance << std::endl;
 std::cout << "std00= " << pow(results.variance,0.5) << std::endl;
 
 size_t nbs_found;
-float variance01;
+double variance01;
 std::vector<double> var_vec;
 
 variance01kd_r<double>(datafile, results.avg, num_atoms, num_frames,
