@@ -585,7 +585,7 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
   // units are Angstroms
   // Instead of the minimum image criterium which won't work for KDtree
   // we replicate enough of the region from PBC necessary to perform calculations
-  double skin = 6.0;
+  double skin = 5.0;
   size_t header = 5;
   long n = 1;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist, ydist, zdist,
@@ -721,7 +721,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
     var_out.close();
   }
 
-  double skin = 4.0;
+  double skin = 6.0;
   size_t header = 5;
   size_t n = 1;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
