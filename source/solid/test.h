@@ -455,7 +455,7 @@ template <typename num_t>
 void NNeighbors(std::string &filename, const size_t N, const int num_frames,
     const int num_nbs) {
   PointCloud<num_t> cloud;
-  double skin = 2.5;
+  double skin = 4.0;
   size_t header = 5;
   int n = 1;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist, ydist,
@@ -585,7 +585,7 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
   // units are Angstroms
   // Instead of the minimum image criterium which won't work for KDtree
   // we replicate enough of the region from PBC necessary to perform calculations
-  double skin = 5.0;
+  double skin = 6.0;
   size_t header = 5;
   long n = 1;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist, ydist, zdist,
