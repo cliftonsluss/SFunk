@@ -20,15 +20,15 @@ void Trajectory::getNextFrame(simFrame<double> &frame) {
   // simulation box around the origin. This is to eliminate overrun
   // errors for atoms close to 0 at the edge of a box.
   inputfile >> frame.xbox.min >> frame.xbox.max;
-  double xlen = frame.xbox.max - frame.xbox.min;
+  double xlen = (frame.xbox.max - frame.xbox.min);
   frame.xbox.min = -xlen/2.0;
   frame.xbox.max = xlen/2.0;
   inputfile >> frame.ybox.min >> frame.ybox.max;
-  double ylen = frame.ybox.max - frame.ybox.min;
+  double ylen = (frame.ybox.max - frame.ybox.min);
   frame.ybox.min = -ylen/2.0;
   frame.ybox.max = ylen/2.0;
   inputfile >> frame.zbox.min >> frame.zbox.max;
-  double zlen = frame.zbox.max - frame.zbox.min;
+  double zlen = (frame.zbox.max - frame.zbox.min);
   frame.zbox.min = -zlen/2.0;
   frame.zbox.max = zlen/2.0;
 

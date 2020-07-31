@@ -22,6 +22,8 @@ int main(int argc, char *argv[]) {
   int num_frames = config.j["frames"];
   std::cout << num_frames << " frames" << std::endl;
   int num_skipframes = config.j["skipframes"];
+  double skin = config.j["skin"];
+  std::cout << "Using skin of " << skin << std::endl;
   std::cout << "Skipping " << num_skipframes << " frames" << std::endl;
   std::string datafile = config.j["datafile"];
   std::cout << "Reading data from " << datafile << std::endl;
@@ -45,7 +47,7 @@ double variance01;
 std::vector<double> var_vec;
 
 variance01kd_r<double>(datafile, results.avg, num_atoms, num_frames,
-  num_skipframes, num_nbs, nbs_found, variance01, outfile, dump);
+  num_skipframes, num_nbs, nbs_found, variance01, outfile, skin, dump);
 std::cout << "neighbor count= " << nbs_found << std::endl;
 std::cout << "variance01= " << variance01 << std::endl;
 std::cout << "std01= " << pow(variance01,0.5) << std::endl;

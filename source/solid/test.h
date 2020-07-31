@@ -169,6 +169,8 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
       cloud.pts[i].y = frame.pts[i].y;
       cloud.pts[i].z = frame.pts[i].z;
     }
+
+
   }
   else {
   // this frame was created with fractional coordinates
@@ -389,9 +391,6 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
       if ((za - zb) > (zlen*0.5)){
 	      zb = zb + zlen;
       }
-
-
-
 
 
 
@@ -722,7 +721,7 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
 template <typename num_t>
 void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs,
-    size_t &nbs_found, double &variance01, std::string &outfile,
+    size_t &nbs_found, double &variance01, std::string &outfile, double skin,
     int dump=0, float error=0.0001) {
   PointCloud<num_t> cloud;
   if (!outfile.empty()) {
@@ -732,7 +731,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
     var_out.close();
   }
 
-  double skin = 5.0;
+  // double skin = 6.0;
   size_t header = 5;
   size_t n = 1;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
@@ -747,6 +746,8 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   // we are using the average positions of the atoms from all of the frames to
   // generate a nearest neighbor list
   // populate point cloud with average frame
+  // apply a 'skin' around the simulation volume to simulate
+  // periodic boundary coditions amenable to kDtree
   populatePointCloudPBC(cloud, avg_frame, skin);
   // set up KDtree adaptor
   typedef KDTreeSingleIndexAdaptor<
