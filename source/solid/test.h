@@ -722,13 +722,11 @@ template <typename num_t>
 void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs,
     size_t &nbs_found, double &variance01, std::string &outfile, double skin,
-    int dump=0, float error=0.0001) {
+    int dump=0, float eps=0.0001) {
   PointCloud<num_t> cloud;
   if (!outfile.empty()) {
-    std::ofstream var_out;
-    var_out.open(outfile);
+    std::ofstream var_out {outfile};
     var_out << "npairs\t   variance\n";
-    var_out.close();
   }
 
   // double skin = 6.0;
@@ -879,10 +877,8 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
 
       if (dump > 0) {
         if (rs.NumDataValues() % dump == 0) {
-          std::ofstream var_out;
-          var_out.open(outfile, std::ofstream::app);
+          std::ofstream var_out {outfile, std::ios_base::app};
           var_out << rs.NumDataValues() << " " <<  rs.Variance() << "\n";
-          var_out.close();
         }
       }
 
