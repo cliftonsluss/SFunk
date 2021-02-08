@@ -31,6 +31,7 @@
 #include <fstream>
 #include <cmath>
 #include <vector>
+#include <sstream>
 #include <map>
 #include "nanoflann.h"
 
@@ -169,8 +170,6 @@ void populatePointCloudPBC(PointCloud<T> &cloud, simFrame<T> &frame,
       cloud.pts[i].y = frame.pts[i].y;
       cloud.pts[i].z = frame.pts[i].z;
     }
-
-
   }
   else {
   // this frame was created with fractional coordinates
@@ -339,13 +338,19 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
     old_avgz, diff_sqrd, nsamples, variance;
   simFrame<double> frame0;
   simFrame<double> frame;
-  //std::vector<double> avg_x, avg_y, avg_z;
   Trajectory traj(filename, num_atoms, 5);
   traj.skipFrames(num_skipframes);
   traj.getNextFrame(frame);
   frame0 = frame;
   result.avg.pts.resize(num_atoms);
   result.avg.num_atoms = num_atoms;
+  result.avg.xbox.min = frame.xbox.min;
+  result.avg.xbox.max = frame.xbox.max;
+  result.avg.ybox.min = frame.ybox.min;
+  result.avg.ybox.max = frame.ybox.max;
+  result.avg.zbox.min = frame.zbox.min;
+  result.avg.zbox.max = frame.zbox.max;
+
 
   // for all points in first frame place them as initial values of the average
   // frame.
@@ -440,7 +445,11 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
   nsamples = num_frames*3.0;
   result.variance = diff_sqrd/(nsamples-1);
 
-
+  // std::string outfile = "test.traj";
+  // std::ofstream test_out{outfile};
+  // for (int i =0; i < 250; i++){
+  //   test_out << result.avg.pts[i].x << " " << result.avg.pts[i].y << " " << result.avg.pts[i].y << std::endl;
+  // }
   return;
 }
 
@@ -723,6 +732,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
     const int num_frames, const int num_skipframes, const int num_nbs,
     size_t &nbs_found, double &variance01, std::string &outfile, double skin,
     int dump=0, float eps=0.0001) {
+  // std::cout << dump << "\n";
   PointCloud<num_t> cloud;
   if (!outfile.empty()) {
     std::ofstream var_out {outfile};
@@ -731,7 +741,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
 
   // double skin = 6.0;
   size_t header = 5;
-  size_t n = 1;
+  size_t n = 0;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
       dist, variance;
   double diff_sqrd = 0;
@@ -781,9 +791,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
     out_dist.resize(num_results);
     // downselect neighbors and restore indexes from skin map
     // count number of actual neighbors
-    // std::cout << "atom index, number of neighbors= " << j << ", " << num_results << std::endl;
     for (size_t k = 0; k < num_results; k++) {
-      // std::cout << "neighbor count " << nbs << std::endl;
       neigh_idx = ret_index[k];
       // for any given neighbor index (neigh_idx) that is greater than the
       // current atom's index (idx) we want to add it to the list of neighbor
@@ -794,11 +802,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
 	      if (cloud.pbc_idx_map.find(neigh_idx) != cloud.pbc_idx_map.end()) {
 	        if (cloud.pbc_idx_map[neigh_idx] > idx) {
 	          idxs.push_back(idx);
-            // std::cout << "index " << idx << std::endl;
 	          neigh_idxs.push_back(cloud.pbc_idx_map[neigh_idx]);
-            // std::cout << "neighbor index " << neigh_idx << std::endl;
-            //std::cout << idx << ", " << cloud.pbc_idx_map[neigh_idx] << std::endl;
-            //std::cout << idxs[nbs] << ", " << neigh_idxs[nbs] << std::endl;
             nbs++;
 	        }
 	      }
@@ -818,11 +822,14 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
     }
   }
   RunningStat rs;
-  // std::cout << "neighbor count " << nbs << std::endl;
   traj.skipFrames(num_skipframes);
+  std::string buff = "";
+  int lines = 0;
+  int frames_counted = 0;
   for (size_t i = 0; i < num_frames; i++) {
     traj.getNextFrame(frame);
     // std::cout << "frame number = " << i << std::endl;
+    frames_counted++;
     xlen = frame.xbox.max - frame.xbox.min;
     ylen = frame.ybox.max - frame.ybox.min;
     zlen = frame.zbox.max - frame.zbox.min;
@@ -862,8 +869,11 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
       zdist_2 = pow((za-zb),2.0);
       dist = pow(xdist_2 + ydist_2 + zdist_2, 0.5);
 
+      // debuggin line?
       var_check = rs.Variance();
+
       rs.Push(dist);
+      n++;
       // if (rs.NumDataValues() > min_count){
       //   if (std::abs(var_check - rs.Variance()) < error){
       //     nbs_found = rs.NumDataValues();
@@ -875,27 +885,42 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
       // }
 
 
+      // if (dump > 0) {
+      //   if (rs.NumDataValues() % dump == 0) {
+      //     std::ofstream var_out {outfile, std::ios_base::app};
+      //     var_out << rs.NumDataValues() << " " <<  rs.Variance() << "\n";
+      //   }
+      // }
       if (dump > 0) {
         if (rs.NumDataValues() % dump == 0) {
-          std::ofstream var_out {outfile, std::ios_base::app};
-          var_out << rs.NumDataValues() << " " <<  rs.Variance() << "\n";
+          if (lines < 1000) {
+            std::stringstream stream1;
+            stream1 << rs.NumDataValues();
+            std::stringstream stream2;
+            stream2 << rs.Variance();
+            buff = buff + stream1.str() + " " + stream2.str() + "\n";
+            lines++;
+          }
+          else {
+            std::ofstream var_out {outfile, std::ios_base::app};
+            var_out << buff;
+            lines = 0;
+            buff = "";
+          }
         }
       }
-
       // variance_vector.push_back(rs.Variance());
 
     }
+
   }
-  // std::cout << "average= " << avg << std::endl;
-  // std::cout << "average= " << rs.Mean() << std::endl;
-  // variance = diff_sqrd/(n-1);
-  // std::cout << "n pairs= " << n << std::endl;
+  if (dump > 0) {
+    std::ofstream var_out {outfile, std::ios_base::app};
+    var_out << buff;
+  }
+
   nbs_found = rs.NumDataValues();
-  // std::cout << "number of pairs= " << nbs_found << std::endl;
-  // std::cout << "variance01= " << variance << std::endl;
   variance01 = rs.Variance();
-  // std::cout << "variance01= " << variance01 << std::endl;
-  // std::cout << "std01= " << pow(variance, 0.5) << std::endl;
 
 
 }
