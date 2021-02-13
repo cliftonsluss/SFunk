@@ -470,10 +470,10 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
 // }
 
 
-template <typename num_t>
+template <typename T>
 void NNeighbors(std::string &filename, const size_t N, const int num_frames,
     const int num_nbs) {
-  PointCloud<num_t> cloud;
+  PointCloud<T> cloud;
   double skin = 4.0;
   size_t header = 5;
   int n = 1;
@@ -483,15 +483,15 @@ void NNeighbors(std::string &filename, const size_t N, const int num_frames,
   double old_avg = 0;
   double avg = 0;
   Trajectory traj(filename, N, header);
-  simFrame<num_t> frame;
+  simFrame<T> frame;
   frame.index = 0;
   for (int i = 0; i < num_frames; i++) {
     traj.getNextFrame(frame);
     populatePointCloudPBC(cloud, frame, skin, true);
     typedef KDTreeSingleIndexAdaptor<
-      //L2_Simple_Adaptor<num_t, PointCloud<num_t> >,
-      NN_Adaptor<num_t, PointCloud<num_t> >,
-      PointCloud<num_t>,
+      //L2_Simple_Adaptor<T, PointCloud<T> >,
+      NN_Adaptor<T, PointCloud<T> >,
+      PointCloud<T>,
       3 //dimensionality of data
       > my_kd_tree_t;
     my_kd_tree_t index(3, cloud, KDTreeSingleIndexAdaptorParams(10) );
@@ -508,11 +508,11 @@ void NNeighbors(std::string &filename, const size_t N, const int num_frames,
     for (int j = 0; j < N; j++)
     {
       idx = j;
-      const num_t query_pt[3] = { cloud.pts[idx].x, cloud.pts[idx].y,
+      const T query_pt[3] = { cloud.pts[idx].x, cloud.pts[idx].y,
           cloud.pts[idx].z };
       {
       std::vector<size_t> ret_index(num_results);
-      std::vector<num_t> out_dist(num_results);
+      std::vector<T> out_dist(num_results);
       num_results = index.knnSearch(&query_pt[0], num_results, &ret_index[0],
           &out_dist[0]);
       ret_index.resize(num_results);
@@ -595,11 +595,11 @@ void NNeighbors(std::string &filename, const size_t N, const int num_frames,
   std::cout << "std01= " << pow(variance, 0.5) << std::endl;
 }
 
-template <typename num_t>
-void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,
+template <typename T>
+void variance01kd(std::string &filename, simFrame<T> &avg_frame, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs) {
 // create PointCloud object
-  PointCloud<num_t> cloud;
+  PointCloud<T> cloud;
   // skin defines amount of padding to add to outsides of simulation cube
   // units are Angstroms
   // Instead of the minimum image criterium which won't work for KDtree
@@ -613,13 +613,13 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
   double old_avg = 0.0;
   double avg = 0.0;
   Trajectory traj(filename, N, header);
-  simFrame<num_t> frame;
+  simFrame<T> frame;
   //std::cout << "populating point cloud" << std::endl;
   // is avg_frame scaled or no?
   populatePointCloudPBC(cloud, avg_frame, skin);
   typedef KDTreeSingleIndexAdaptor<
-   NN_Adaptor<num_t, PointCloud<num_t> >,
-   PointCloud<num_t>,
+   NN_Adaptor<T, PointCloud<T> >,
+   PointCloud<T>,
    3
    > my_kd_tree_t;
   // dimensionality = 3, DatasetAdaptor = cloud, max leaf count = 10
@@ -636,11 +636,11 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
   for (int j = 0; j < N; j++)
   {
     idx = j;
-    const num_t query_pt[3] = { cloud.pts[idx].x, cloud.pts[idx].y,
+    const T query_pt[3] = { cloud.pts[idx].x, cloud.pts[idx].y,
         cloud.pts[idx].z };
     {
     std::vector<size_t> ret_index(num_results);
-    std::vector<num_t> out_dist(num_results);
+    std::vector<T> out_dist(num_results);
   // pass output vectors by reference
     num_results = index.knnSearch(&query_pt[0], num_results, &ret_index[0],
         &out_dist[0]);
@@ -727,13 +727,13 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
   std::cout << "variance01= " << rs.Variance() << std::endl;
   std::cout << "std01= " << pow(rs.Variance(), 0.5) << std::endl;
 }
-template <typename num_t>
-void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const size_t N,
+template <typename T>
+void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs,
     size_t &nbs_found, double &variance01, std::string &outfile, double skin,
     int dump=0, float eps=0.0001) {
   // std::cout << dump << "\n";
-  PointCloud<num_t> cloud;
+  PointCloud<T> cloud;
   if (!outfile.empty()) {
     std::ofstream var_out {outfile};
     var_out << "npairs\t   variance\n";
@@ -749,7 +749,7 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   double avg = 0.0;
   double var_check;
   Trajectory traj(filename, N, header);
-  simFrame<num_t> frame;
+  simFrame<T> frame;
   //std::cout << "populating point cloud" << std::endl;
   // we are using the average positions of the atoms from all of the frames to
   // generate a nearest neighbor list
@@ -759,8 +759,8 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   populatePointCloudPBC(cloud, avg_frame, skin);
   // set up KDtree adaptor
   typedef KDTreeSingleIndexAdaptor<
-   NN_Adaptor<num_t, PointCloud<num_t> >,
-   PointCloud<num_t>,
+   NN_Adaptor<T, PointCloud<T> >,
+   PointCloud<T>,
    3
    > my_kd_tree_t;
   // create an index for our adaptor
@@ -778,11 +778,11 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   for (size_t j = 0; j < N; j++)
   {
     idx = j;
-    const num_t query_pt[3] = { cloud.pts[idx].x, cloud.pts[idx].y,
+    const T query_pt[3] = { cloud.pts[idx].x, cloud.pts[idx].y,
         cloud.pts[idx].z };
     {
     std::vector<size_t> ret_index(num_results);
-    std::vector<num_t> out_dist(num_results);
+    std::vector<T> out_dist(num_results);
     // knnSearch returns size_t resultSet.size() num_results is the number of
     // neighbors we requested for this U.C. type
     num_results = index.knnSearch(&query_pt[0], num_results, &ret_index[0],
