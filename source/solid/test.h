@@ -609,9 +609,9 @@ void variance01kd(std::string &filename, simFrame<num_t> &avg_frame, const size_
   long n = 1;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist, ydist, zdist,
       variance;
-  double diff_sqrd = 0;
-  double old_avg = 0;
-  double avg = 0;
+  double diff_sqrd = 0.0;
+  double old_avg = 0.0;
+  double avg = 0.0;
   Trajectory traj(filename, N, header);
   simFrame<num_t> frame;
   //std::cout << "populating point cloud" << std::endl;
@@ -744,9 +744,9 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
   size_t n = 0;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
       dist, variance;
-  double diff_sqrd = 0;
-  double old_avg = 0;
-  double avg = 0;
+  double diff_sqrd = 0.0;
+  double old_avg = 0.0;
+  double avg = 0.0;
   double var_check;
   Trajectory traj(filename, N, header);
   simFrame<num_t> frame;
@@ -884,13 +884,6 @@ void variance01kd_r(std::string &filename, simFrame<num_t> &avg_frame, const siz
       //   }
       // }
 
-
-      // if (dump > 0) {
-      //   if (rs.NumDataValues() % dump == 0) {
-      //     std::ofstream var_out {outfile, std::ios_base::app};
-      //     var_out << rs.NumDataValues() << " " <<  rs.Variance() << "\n";
-      //   }
-      // }
       if (dump > 0) {
         if (rs.NumDataValues() % dump == 0) {
           if (lines < 1000) {
