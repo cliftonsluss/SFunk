@@ -1,5 +1,8 @@
 #ifndef STRUCTURES_H
 #define STRUCTURES_H
+
+// common structures used throughout project
+
 template <typename T>
 struct simFrame
 {
