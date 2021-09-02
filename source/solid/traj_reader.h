@@ -3,7 +3,8 @@
 #include <fstream>
 #include <cmath>
 #include <vector>
-#include "test.h"
+#include "structures.h"
+#include "neighbor_list_generator.h"
 
 #ifndef TRAJ_READER_H
 #define TRAJ_READER_H

@@ -33,11 +33,15 @@
 #include <vector>
 #include <sstream>
 #include <map>
+#include <stdexcept>
 #include "nanoflann.h"
-
+#include "neighbor_list_generator.h"
+#include "traj_reader.h"
+#include "structures.h"
 
 #ifndef TEST_H
 #define TEST_H
+
 
 using namespace nanoflann;
 
@@ -112,36 +116,6 @@ struct PointCloud
 	template <class BBOX>
 	bool kdtree_get_bbox(BBOX& /* bb */) const { return false; }
 };
-
-
-template <typename T>
-struct simFrame
-{
-	struct Point
-	{
-	  T  x,y,z;
-	};
-	std::vector<Point>  pts;
-	struct Box {
-	  T min, max;
-	};
-	Box xbox, ybox, zbox;
-	struct Atom {
-	  int atom_num, atom_type;
-	};
-	std::vector<Atom> atms;
-	std::vector<double> flat;
-	int num_atoms;
-  int index;
-};
-
-template <typename T>
-struct resultSet
-{
-  simFrame<T> avg;
-  T variance;
-};
-
 
 template <typename T>
 // scaled means that fractional coordinates have been converted to
@@ -312,22 +286,6 @@ class RunningStat
     size_t m_n;
     double m_oldM, m_newM, m_oldS, m_newS;
 };
-
-
-
-class Trajectory;
-#include "traj_reader.h"
-//class Trajectory {
-//  public:
-//    Trajectory(std::string &filename, const size_t num_atoms, const size_t header);
-//    void getNextFrame(simFrame<double> &frame);//
-
-//  private:
-//    std::string filename;
-//    size_t num_atoms;
-//    size_t header;
-//    std::ifstream inputfile;
-//};
 
 //Welford method expanded to 3d point cloud
 // https://www.johndcook.com/blog/standard_deviation/
@@ -727,13 +685,21 @@ void variance01kd(std::string &filename, simFrame<T> &avg_frame, const size_t N,
   std::cout << "variance01= " << rs.Variance() << std::endl;
   std::cout << "std01= " << pow(rs.Variance(), 0.5) << std::endl;
 }
+
+// template <typename T>
+// NeigborList<size_t> NeighborListGenerator(PointCloud<T> cloud, size_t N,
+//                     const int num_nbs,){
+//
+//
+// }
+
 template <typename T>
 void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs,
     size_t &nbs_found, double &variance01, std::string &outfile, double skin,
     int dump=0, float eps=0.0001) {
   // std::cout << dump << "\n";
-  PointCloud<T> cloud;
+  // PointCloud<T> cloud;
   if (!outfile.empty()) {
     std::ofstream var_out {outfile};
     var_out << "npairs\t   variance\n";
@@ -750,77 +716,83 @@ void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t 
   double var_check;
   Trajectory traj(filename, N, header);
   simFrame<T> frame;
+
   //std::cout << "populating point cloud" << std::endl;
   // we are using the average positions of the atoms from all of the frames to
   // generate a nearest neighbor list
   // populate point cloud with average frame
   // apply a 'skin' around the simulation volume to simulate
   // periodic boundary coditions amenable to kDtree
-  populatePointCloudPBC(cloud, avg_frame, skin);
-  // set up KDtree adaptor
-  typedef KDTreeSingleIndexAdaptor<
-   NN_Adaptor<T, PointCloud<T> >,
-   PointCloud<T>,
-   3
-   > my_kd_tree_t;
-  // create an index for our adaptor
-  my_kd_tree_t index(3, cloud, KDTreeSingleIndexAdaptorParams(10) );
-  //std::cout << "building point cloud" << std::endl;
-  index.buildIndex();
-  size_t num_results = num_nbs;
-  size_t idx;
-  size_t neigh_idx;
-  size_t nbs = 0;
-  size_t min_count = 100;
-  std::vector<double> idxs;
-  std::vector<double> neigh_idxs;
-  // we will use each atom as a query point to find nearest neighbors
-  for (size_t j = 0; j < N; j++)
-  {
-    idx = j;
-    const T query_pt[3] = { cloud.pts[idx].x, cloud.pts[idx].y,
-        cloud.pts[idx].z };
-    {
-    std::vector<size_t> ret_index(num_results);
-    std::vector<T> out_dist(num_results);
-    // knnSearch returns size_t resultSet.size() num_results is the number of
-    // neighbors we requested for this U.C. type
-    num_results = index.knnSearch(&query_pt[0], num_results, &ret_index[0],
-        &out_dist[0]);
-    ret_index.resize(num_results);
-    out_dist.resize(num_results);
-    // downselect neighbors and restore indexes from skin map
-    // count number of actual neighbors
-    for (size_t k = 0; k < num_results; k++) {
-      neigh_idx = ret_index[k];
-      // for any given neighbor index (neigh_idx) that is greater than the
-      // current atom's index (idx) we want to add it to the list of neighbor
-      // indexs (neigh_idxs) the greater than condition ensures we don't include
-      // duplicate pairs
-      if (neigh_idx > idx) {
-        // is the neighbor index found in the skin map
-	      if (cloud.pbc_idx_map.find(neigh_idx) != cloud.pbc_idx_map.end()) {
-	        if (cloud.pbc_idx_map[neigh_idx] > idx) {
-	          idxs.push_back(idx);
-	          neigh_idxs.push_back(cloud.pbc_idx_map[neigh_idx]);
-            nbs++;
-	        }
-	      }
-        // if the index is not found in the skin map the pair
-        // can be stored as is
-	      else {
-	        idxs.push_back(idx);
-          // std::cout << "index " << idx << std::endl;
-	        neigh_idxs.push_back(neigh_idx);
-          // std::cout << "neighbor index " << neigh_idx << std::endl;
-          //std::cout << idx << ", " << neigh_idx << std::endl;
-          //std::cout << idxs[nbs] << ", " << neigh_idxs[nbs] << std::endl;
-	        nbs++;
-	      }
-      }
-    }
-    }
-  }
+  // populatePointCloudPBC(cloud, avg_frame, skin);
+  // // set up KDtree adaptor
+  // typedef KDTreeSingleIndexAdaptor<
+  //  NN_Adaptor<T, PointCloud<T> >,
+  //  PointCloud<T>,
+  //  3
+  //  > my_kd_tree_t;
+  // // create an index for our adaptor
+  // my_kd_tree_t index(3, cloud, KDTreeSingleIndexAdaptorParams(10) );
+  // index.buildIndex();
+  // size_t num_results = num_nbs;
+  // size_t idx;
+  // size_t neigh_idx;
+  // size_t nbs = 0;
+  // size_t min_count = 100;
+  std::vector<size_t> idxs;
+  std::vector<size_t> neigh_idxs;
+  // // we will use each atom as a query point to find nearest neighbors
+  // for (size_t j = 0; j < N; j++)
+  // {
+  //   idx = j;
+  //   const T query_pt[3] = { cloud.pts[idx].x, cloud.pts[idx].y,
+  //       cloud.pts[idx].z };
+  //   {
+  //   std::vector<size_t> ret_index(num_results);
+  //   std::vector<T> out_dist(num_results);
+  //   // knnSearch returns size_t resultSet.size() num_results is the number of
+  //   // neighbors we requested for this U.C. type
+  //   num_results = index.knnSearch(&query_pt[0], num_nbs, &ret_index[0],
+  //       &out_dist[0]);
+  //   ret_index.resize(num_results);
+  //   out_dist.resize(num_results);
+  //   // downselect neighbors and restore indexes from skin map
+  //   // count number of actual neighbors
+  //   for (size_t k = 0; k < num_results; k++) {
+  //     neigh_idx = ret_index[k];
+  //     // for any given neighbor index (neigh_idx) that is greater than the
+  //     // current atom's index (idx) we want to add it to the list of neighbor
+  //     // indexs (neigh_idxs) the greater than condition ensures we don't include
+  //     // duplicate pairs
+  //     if (neigh_idx > idx) {
+  //       // is the neighbor index found in the skin map
+	//       if (cloud.pbc_idx_map.find(neigh_idx) != cloud.pbc_idx_map.end()) {
+	//         if (cloud.pbc_idx_map[neigh_idx] > idx) {
+	//           idxs.push_back(idx);
+	//           neigh_idxs.push_back(cloud.pbc_idx_map[neigh_idx]);
+  //           nbs++;
+	//         }
+	//       }
+  //       // if the index is not found in the skin map the pair
+  //       // can be stored as is
+	//       else {
+	//         idxs.push_back(idx);
+  //         // std::cout << "index " << idx << std::endl;
+	//         neigh_idxs.push_back(neigh_idx);
+  //         // std::cout << "neighbor index " << neigh_idx << std::endl;
+  //         //std::cout << idx << ", " << neigh_idx << std::endl;
+  //         //std::cout << idxs[nbs] << ", " << neigh_idxs[nbs] << std::endl;
+	//         nbs++;
+	//       }
+  //     }
+  //   }
+  //   }
+  // }
+  NeighborListGenerator NL;
+  NL = NeighborListGenerator(avg_frame, N, num_nbs, skin);
+  NeighborList<size_t> nlist = NL.GetList();
+  idxs = nlist.idx;
+  neigh_idxs = nlist.nbs;
+  size_t nbs = nlist.nnbs;
   RunningStat rs;
   traj.skipFrames(num_skipframes);
   std::string buff = "";
