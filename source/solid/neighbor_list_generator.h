@@ -1,16 +1,8 @@
 #ifndef NEIGH_LIST_GEN
 #define NEIGH_LIST_GEN
 #include "structures.h"
-
-template <typename T>
-struct NeighborList
-{
-  std::vector<size_t> idx;
-  std::vector<size_t> nbs;
-  T nnbs;
-};
-
-
+#include "neighbor_list.h"
+#include "PBCPointCloud_generator.h"
 
 class NeighborListGenerator {
   public:
@@ -19,10 +11,20 @@ class NeighborListGenerator {
     NeighborListGenerator(simFrame<double> &avg_frame,
                           const size_t N, const int num_nbs, double skin);
 
-    NeighborList<size_t> GetList();
+    NeighborListGenerator(simFrame<double> &avg_frame,
+                          const size_t N, const int num_nbs, double skin,
+                          double thing);
+
+    std::vector<std::vector<size_t>> GetListOG();
+    std::vector<std::vector<size_t>> GetListSkin();
+    std::vector<std::vector<size_t>> GetErrors();
 
   private:
-    NeighborList<size_t> NList;
+    PBCPointCloudGenerator PBCPCG;
+    PointCloud<double> cloud;
+    std::vector<std::vector<size_t>> nbs_og;
+    std::vector<std::vector<size_t>> nbs_skin;
+    std::vector<std::vector<size_t>> errors;
 
 };
 

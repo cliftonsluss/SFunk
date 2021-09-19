@@ -39,6 +39,7 @@ resultSet<double> results;
 // will be broken out into a more compact method at a later date
 variance00WK<double>(datafile, num_atoms, num_frames, num_skipframes, results);
 // values below not needed anymore but still being reported for reference
+outputfile << std::fixed << std::setprecision(7);
 std::cout << "variance00= " << results.variance << std::endl;
 std::cout << "std00= " << pow(results.variance,0.5) << std::endl;
 
