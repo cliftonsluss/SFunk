@@ -1,7 +1,6 @@
 #ifndef NEIGH_LIST_GEN
 #define NEIGH_LIST_GEN
 #include "structures.h"
-#include "neighbor_list.h"
 #include "PBCPointCloud_generator.h"
 
 class NeighborListGenerator {

@@ -1,3 +1,12 @@
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include <cmath>
+#include <vector>
+#include <sstream>
+#include <map>
+#include <stdexcept>
+
 #ifndef STRUCTURES_H
 #define STRUCTURES_H
 

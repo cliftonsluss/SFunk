@@ -36,6 +36,7 @@
 #include <stdexcept>
 #include "nanoflann.h"
 #include "neighbor_list_generator.h"
+#include "PBCPointCloud_generator.h"
 #include "traj_reader.h"
 #include "structures.h"
 
