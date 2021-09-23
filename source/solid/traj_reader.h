@@ -17,7 +17,7 @@ class Trajectory {
     Trajectory(std::string &filename);
     void getNextFrame(simFrame<double> &frame);
     void skipFrames(const size_t sframes);
-    void writeFrame(simFrame<double> &frame, bool xyz);
+    void writeFrame(simFrame<double> &frame, bool xyz=false);
 
   private:
     // string filename;
@@ -25,6 +25,7 @@ class Trajectory {
     size_t header;
     std::ifstream inputfile;
     std::ofstream outputfile;
+    size_t frame_num;
 
 };
 

@@ -10,6 +10,7 @@ Trajectory::Trajectory(std::string &filename, const size_t num_atoms,
 
 Trajectory::Trajectory(std::string &filename) {
   Trajectory::outputfile.open(filename, std::ofstream::out);
+  Trajectory::frame_num = 0;
 }
 
 void Trajectory::getNextFrame(simFrame<double> &frame) {
@@ -24,8 +25,9 @@ void Trajectory::getNextFrame(simFrame<double> &frame) {
   // simulation box around the origin. This is to eliminate overrun
   // errors for atoms close to 0 at the edge of a box.
   inputfile >> frame.box.xmin >> frame.box.xmax;
-  std::cout << frame.box.xmin << std::endl;
-  std::cout << frame.box.xmax << std::endl;
+  // std::cout << frame.box.xmin << std::endl;
+  // std::cout << "box min/max\n";
+  // std::cout << frame.box.xmax << std::endl;
   frame.box.xlen = frame.box.xmax - frame.box.xmin;
   frame.box.xmin = -frame.box.xlen/2.0;
   frame.box.xmax = frame.box.xlen/2.0;
@@ -35,8 +37,8 @@ void Trajectory::getNextFrame(simFrame<double> &frame) {
   frame.box.ymax = frame.box.ylen/2.0;
   inputfile >> frame.box.zmin >> frame.box.zmax;
   frame.box.zlen = frame.box.zmax - frame.box.zmin;
-  // frame.box.zmin = -frame.box.zlen/2.0;
-  // frame.box.zmax = frame.box.zlen/2.0;
+  frame.box.zmin = -frame.box.zlen/2.0;
+  frame.box.zmax = frame.box.zlen/2.0;
   // std::cout << "xlen = " << frame.box.xlen << std::endl;
   // std::cout << "ylen = " << frame.box.ylen << std::endl;
   // std::cout << "zlen = " << frame.box.zlen << std::endl;
@@ -70,7 +72,7 @@ void Trajectory::skipFrames(const size_t sframes) {
   // std::cout << temp << '\n';
 }
 
-void Trajectory::writeFrame(simFrame<double> &frame, bool xyz=false) {
+void Trajectory::writeFrame(simFrame<double> &frame, bool xyz) {
   double x,y,z;
   std::string atom;
   atom = "a ";
@@ -84,15 +86,16 @@ void Trajectory::writeFrame(simFrame<double> &frame, bool xyz=false) {
       if (i > 53) {
         atom = "b ";
       }
-      // std::cout << atom << x << " " <<
-      //            y << " " << z << "\n";
+      std::cout << atom << x << " " <<
+                 y << " " << z << "\n";
       outputfile << i << " " << atom << x << " " <<
                  y << " " << z << "\n";
     }
   } else {
-    // outputfile << std::fixed << std::setprecision(4);
+    outputfile << std::fixed << std::setprecision(6);
     outputfile << "ITEM: TIMESTEP\n";
-    outputfile << "1\n";
+    outputfile << frame_num << "\n";
+    frame_num++;
     outputfile << "ITEM: NUMBER OF ATOMS\n";
     outputfile << frame.num_atoms << "\n";
     outputfile << "ITEM: BOX BOUNDS pp pp pp\n";
@@ -100,13 +103,18 @@ void Trajectory::writeFrame(simFrame<double> &frame, bool xyz=false) {
     outputfile << frame.box.ymin << " " << frame.box.ymax << "\n";
     outputfile << frame.box.zmin << " " << frame.box.zmax << "\n";
     outputfile << "ITEM: ATOMS id type xs ys zs\n";
-    // outputfile << std::fixed << std::setprecision(7);
+    outputfile << std::fixed << std::setprecision(7);
     for (size_t i = 0; i < frame.num_atoms; i++){
       x = (frame.pts[i].x - frame.box.xmin)/frame.box.xlen;
       y = (frame.pts[i].y - frame.box.ymin)/frame.box.ylen;
       z = (frame.pts[i].z - frame.box.zmin)/frame.box.zlen;
-      outputfile << i+1 << " 1 " << x << " " <<
-                 y << " " << z << "\n";
+      if (frame.idx.size() > 0){
+        outputfile << frame.idx[i] << " 1 " << x << " " <<
+                   y << " " << z << "\n";
+      } else {
+        outputfile << i+1 << " 1 " << x << " " <<
+                   y << " " << z << "\n";
+      }
     }
   }
 

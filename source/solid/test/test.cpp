@@ -3,6 +3,8 @@
 #include "../traj_reader.cpp"
 #include "../neighbor_list_generator.cpp"
 #include "../PBCPointCloud_generator.cpp"
+#include "../PBC.cpp"
+#include "../cell2frame.h"
 #include "../test.h"
 #include "test.h"
 #include "/Users/clifton/googletest/googletest/include/gtest/gtest.h"
@@ -51,16 +53,54 @@ TEST(read_config_Test, CorrectValues) {
   ASSERT_EQ(0.000000001, config.j["error"]);
 }
 
+TEST(Cell2FrameTest, doesnt_crash){
+  std::vector<double> pt{0,2,2,2};
+  std::vector<std::vector<double>> nbs{{1,1,1,1},
+                                       {2,3,1,3},
+                                       {3,1,1,3},
+                                       {5,1,3,3},
+                                       {4,3,3,3},
+                                       {6,3,1,1},
+                                       {7,3,3,1},
+                                       {8,1,3,1}};
+  simFrame<double> frame = cell2frame(pt, nbs);
+  for (int i = 0; i < nbs.size()+1; i++){
+    std::cout << frame.idx[i] << " {" << frame.pts[i].x << "," <<
+    frame.pts[i].y << "," << frame.pts[i].z << "}"
+    << std::endl;
+  }
+  std::string outfile = "cell.traj";
+  Trajectory CellTraj(outfile);
+  CellTraj.writeFrame(frame,false);
+  CellTraj.writeFrame(frame,false);
+  ASSERT_EQ(1,1);
+}
 
 
-// TEST_F(TrajectoryTest, TrajReadWrite){
-//   Trajectory trajin(datafile, num_atoms, header);
-//   trajin.getNextFrame(frame);
-//   Trajectory trajout(outfile);
-//   trajout.writeFrame(frame);
-//   std::cout << "run diff testout.trj traj_256a_1f_fcc.trj to confirm\n";
-//   ASSERT_EQ(1,1);
-// }
+
+TEST_F(TrajectoryTest, TrajReadWrite){
+  Trajectory trajin(datafile, num_atoms, header);
+  trajin.getNextFrame(frame);
+  Trajectory trajout(outfile);
+  trajout.writeFrame(frame);
+  std::cout << "run diff testout.trj traj_256a_1f_fcc.trj to confirm\n";
+  ASSERT_EQ(1,1);
+}
+
+TEST_F(TrajectoryTest, TrajWriteAvg){
+  std::cout << "variance00WK block\n";
+  variance00WK<double>(avgdatafile,
+                       num_avg_atoms,
+                       9,
+                       0,
+                       results);
+  std::cout << "trajout block\n";
+  Trajectory trajout(avgoutfile);
+  std::cout << "writeFrame block\n";
+  trajout.writeFrame(results.avg);
+  // std::cout << "run diff testout.trj traj_256a_1f_fcc.trj to confirm\n";
+  ASSERT_EQ(1,1);
+}
 
 // TEST_F(TrajectoryTest, TrajWriteCloud){
 //   Trajectory trajin(datafile, num_atoms, header);
@@ -248,23 +288,116 @@ TEST_F(NeighborListTest, Fe_neighbors){
   nlist_Fe = NL_Fe.GetListOG();
   std::vector<std::vector<size_t>> errors_Fe;
   errors_Fe = NL_Fe.GetErrors();
+  std::vector<double> pt(4);
+  std::vector<double> nb(4);
+
+  std::vector<double> temp(4);
+  double x,y,z;
+  std::string outfile = "celltest.traj";
+  Trajectory CellTraj(outfile);
+  simFrame<double> frame;
+  std::vector<double> len{frame_fe.box.xlen,
+                          frame_fe.box.ylen,
+                          frame_fe.box.zlen};
+
+// std::cout << "box length" << std::endl;
+// std::cout << len[0] << ", " << len[1] << ", " << len[2] << std::endl;
+// std::cout << errors_Fe.size() << std::endl;
+// std::cout << "\n";
+
   for (int i = 0; i < errors_Fe.size(); i++){
-    std::cout << errors_Fe[i][0] << ", "
-    << errors_Fe[i][1] << "\n" << std::endl;
-    std::cout << errors_Fe[i][0]+1 << " neighbors are" <<std::endl;
+
+    // std::cout << errors_Fe[i][0] << ", "
+    // << errors_Fe[i][1] << "\n" << std::endl;
+    // std::cout << errors_Fe[i][0]+1 << " neighbors are" <<std::endl;
+    x = frame_fe.pts[errors_Fe[i][0]].x;
+    y = frame_fe.pts[errors_Fe[i][0]].y;
+    z = frame_fe.pts[errors_Fe[i][0]].z;
+    // std::cout << "central point" << std::endl;
+    pt = {errors_Fe[i][0]+1.0,x,y,z};
+    // std::cout << pt[0] << " | " << pt[1] << ", " << pt[2] << ", " << pt[3] << std::endl;
+    PBC pbc1(&pt[1],len);
+    std::vector<std::vector<double>> nbs1;
+    // std::cout << "has neighbors" << std::endl;
+
     for (int j = 0; j < num_nbs_bcc; j++){
-      std::cout << "ParticleIdentifier==" << nlist_Fe[errors_Fe[i][0]][j]+1
-      << " ||" << std::endl;
+      // std::cout << "ParticleIdentifier==" << nlist_Fe[errors_Fe[i][0]][j]+1
+      // << " ||" << std::endl;
+      x = frame_fe.pts[nlist_Fe[errors_Fe[i][0]][j]].x;
+      y = frame_fe.pts[nlist_Fe[errors_Fe[i][0]][j]].y;
+      z = frame_fe.pts[nlist_Fe[errors_Fe[i][0]][j]].z;
+      nb = {nlist_Fe[errors_Fe[i][0]][j]+1.0,x,y,z};
+      // std::cout << nb[0] << " | " << nb[1] << ", " << nb[2] << ", " << nb[3] << std::endl;
+      pbc1.minimum_image(&nb[1]);
+      // std::cout << nb[0] << " | " << nb[1] << ", " << nb[2] << ", " << nb[3] << std::endl;
+      nbs1.push_back(nb);
     }
-    std::cout << "ParticleIdentifier==" << errors_Fe[i][0]+1 << "\n" << std::endl;
-    std::cout << errors_Fe[i][1]+1 << " neighbors are" <<std::endl;
+    std::cout << nbs1.size() << std::endl;
+    std::cout << "\n";
+    frame = cell2frame(pt, nbs1);
+    CellTraj.writeFrame(frame,false);
+
+    // std::cout << "ParticleIdentifier==" << errors_Fe[i][0]+1
+    // << "\n" << std::endl;
+    // std::cout << errors_Fe[i][1]+1 << " neighbors are" <<std::endl;
+    x = frame_fe.pts[errors_Fe[i][1]].x;
+    y = frame_fe.pts[errors_Fe[i][1]].y;
+    z = frame_fe.pts[errors_Fe[i][1]].z;
+    // std::cout << "central point" << std::endl;
+    pt = {errors_Fe[i][1]+1.0,x,y,z};
+    // std::cout << pt[0] << " | " << pt[1] << ", " << pt[2] << ", " << pt[3] << std::endl;
+    // std::cout << "has neighbors" << std::endl;
+    PBC pbc2(&pt[1],len);
+    std::vector<std::vector<double>> nbs2;
     for (int j = 0; j < num_nbs_bcc; j++){
-      std::cout << "ParticleIdentifier==" << nlist_Fe[errors_Fe[i][1]][j]+1
-      << " ||" << std::endl;
+      x = frame_fe.pts[nlist_Fe[errors_Fe[i][1]][j]].x;
+      y = frame_fe.pts[nlist_Fe[errors_Fe[i][1]][j]].y;
+      z = frame_fe.pts[nlist_Fe[errors_Fe[i][1]][j]].z;
+      nb = {nlist_Fe[errors_Fe[i][1]][j]+1.0,x,y,z};
+      // std::cout << nb[0] << " | " << nb[1] << ", " << nb[2] << ", " << nb[3] << std::endl;
+      pbc2.minimum_image(&nb[1]);
+      // std::cout << nb[0] << " | " << nb[1] << ", " << nb[2] << ", " << nb[3] << std::endl;
+      nbs2.push_back(nb);
+      // std::cout << "ParticleIdentifier==" << nlist_Fe[errors_Fe[i][1]][j]+1
+      // << " ||" << std::endl;
     }
-    std::cout << "ParticleIdentifier==" << errors_Fe[i][1]+1 << "\n" << std::endl;
+    // std::cout << nbs2.size() << std::endl;
+    // std::cout << "\n";
+    frame = cell2frame(pt, nbs2);
+    CellTraj.writeFrame(frame,false);
+    // std::cout << "ParticleIdentifier==" << errors_Fe[i][1]+1
+    // << "\n" << std::endl;
   }
   ASSERT_EQ(nlist_Fe.size(), num_atoms_Fe);
+}
+
+TEST(PBC_test, minimum_image){
+  // std::vector<int> vec{1,2,3,4,5};
+  // std::cout << vec[(*vec.begin())++] << std::endl;
+
+  std::vector<double> pt{7,0.0,0.0,0.0};
+  std::vector<double> len{2.0,2.0,2.0};
+  std::vector<std::vector<double>>
+                      pts{{0,1.1,1.1,1.1},
+                          {1,-1.1,-1.1,-1.1},
+                          {2,0.5,0.5,0.5},
+                          {3,-0.5,-0.5,-0.5}};
+  PBC pbc(&pt[1],len);
+  for (int i =0;i < pts.size();i++){
+    std::cout << "input = " << pts[i][0] << "{" << pts[i][1] << ", "
+    << pts[i][2] << ", " << pts[i][3] << "}\n";
+    pbc.minimum_image(&pts[i][1]);
+    std::cout << "output = " << pts[i][0] << "{" << pts[i][1] << ", "
+    << pts[i][2] << ", " << pts[i][3] << "}\n";
+  }
+  std::vector<double> a{1,2,3};
+  std::vector<double> b{1,2,3};
+  std::vector<std::vector<double>>
+                      pts1{{0,-0.9,-0.9,-0.9},
+                          {1,0.9,0.9,0.9},
+                          {2,0.5,0.5,0.5},
+                          {3,-0.5,-0.5,-0.5}};
+  ASSERT_EQ(pts1,pts);
 }
 
 

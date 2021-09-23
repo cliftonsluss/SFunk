@@ -953,15 +953,17 @@ void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t 
           if (rs.NumDataValues() % dump == 0) {
             if (lines < 1000) {
               std::stringstream stream1;
-              stream1 << rs.NumDataValues();
+              stream1 << std::fixed << std::setprecision(10)
+              << rs.NumDataValues();
               std::stringstream stream2;
-              stream2 << rs.Variance();
+              stream2 << std::fixed << std::setprecision(10)
+              << rs.Variance();
               buff = buff + stream1.str() + " " + stream2.str() + "\n";
               lines++;
             }
             else {
               std::ofstream var_out {outfile, std::ios_base::app};
-              var_out << buff;
+              var_out << std::fixed << std::setprecision(10) << buff;
               lines = 0;
               buff = "";
             }
@@ -975,7 +977,7 @@ void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t 
   }
   if (dump > 0) {
     std::ofstream var_out {outfile, std::ios_base::app};
-    var_out << buff;
+    var_out << std::fixed << std::setprecision(10) << buff;
   }
 
   nbs_found = rs.NumDataValues();
