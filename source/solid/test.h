@@ -987,6 +987,140 @@ void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t 
 
 }
 
+template <typename T>
+void variance01kd_r_neigh(std::string &filename, const size_t N,
+    const int num_frames, const int num_skipframes, const int num_nbs,
+    size_t &nbs_found, double &variance01, std::string &outfile, double skin,
+    std::vector<std::vector<size_t>> nbs, int dump=0, float eps=0.0001) {
+  // std::cout << dump << "\n";
+  // PointCloud<T> cloud;
+  if (!outfile.empty()) {
+    std::ofstream var_out {outfile};
+    var_out << "npairs\t   variance\n";
+  }
+
+  // double skin = 6.0;
+  size_t header = 5;
+  size_t n = 0;
+  double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
+      dist, variance;
+  double diff_sqrd = 0.0;
+  double old_avg = 0.0;
+  double avg = 0.0;
+  double var_check;
+  Trajectory traj(filename, N, header);
+  simFrame<T> frame;
+
+  std::vector<size_t> idxs;
+  std::vector<size_t> neigh_idxs;
+
+  // NeighborListGenerator NL;
+  // NL = NeighborListGenerator(avg_frame, N, num_nbs, skin);
+  // std::vector<std::vector<size_t>> nbs = NL.GetListOG();
+
+  // std::vector<std::vector<size_t>> nbs = nlist.nbs_og;
+  // neigh_idxs = nlist.nbs;
+  // size_t nbs = nlist.nnbs;
+  RunningStat rs;
+  traj.skipFrames(num_skipframes);
+  std::string buff = "";
+  int lines = 0;
+  int frames_counted = 0;
+  for (size_t i = 0; i < num_frames; i++) {
+    traj.getNextFrame(frame);
+    // std::cout << "frame number = " << i << std::endl;
+    frames_counted++;
+    xlen = frame.box.xlen;
+    ylen = frame.box.ylen;
+    zlen = frame.box.ylen;
+    // std::cout << "nbs = " << nbs << std::endl;
+    for (size_t j = 0; j < N; j++) {
+      for (size_t k = 0; k < num_nbs; k++) {
+        // grab our reference point x,y,z coordinates and coordinates of it's
+        // neighbors
+        xa = frame.pts[i].x;
+        xb = frame.pts[nbs[i][k]].x;
+        ya = frame.pts[i].y;
+        yb = frame.pts[nbs[i][k]].y;
+        za = frame.pts[i].z;
+        zb = frame.pts[nbs[i][k]].z;
+        // apply minimum image criteria and calculate neighbor distances in xyz
+        if ((xa-xb) < (-xlen*0.5)) {
+  	      xb = xb - xlen;
+        }
+        if ((xa-xb) > (xlen*0.5)){
+  	      xb = xb + xlen;
+        }
+        if ((ya-yb) < (-ylen*0.5)){
+  	      yb = yb - ylen;
+        }
+        if ((ya-yb) > (ylen*0.5)){
+  	      yb = yb + ylen;
+        }
+        if ((za-zb) < (-zlen*0.5)){
+  	      zb = zb - zlen;
+        }
+        if ((za-zb) > (zlen*0.5)){
+  	      zb = zb + zlen;
+        }
+        // we will calculate the average sum of the squared component distances
+        // and then take the square root of the final result
+        xdist_2 = pow((xa-xb),2.0);
+        ydist_2 = pow((ya-yb),2.0);
+        zdist_2 = pow((za-zb),2.0);
+        dist = pow(xdist_2 + ydist_2 + zdist_2, 0.5);
+
+        // debuggin line?
+        var_check = rs.Variance();
+
+        rs.Push(dist);
+        n++;
+        // if (rs.NumDataValues() > min_count){
+        //   if (std::abs(var_check - rs.Variance()) < error){
+        //     nbs_found = rs.NumDataValues();
+        //     variance01 = rs.Variance();
+        //     std::cout << "Achieved minimum error with " << nbs_found << " pairs\n";
+        //     std::cout << "variance = " << rs.Variance() << "\n";
+        //     return;
+        //   }
+        // }
+
+        if (dump > 0) {
+          if (rs.NumDataValues() % dump == 0) {
+            if (lines < 1000) {
+              std::stringstream stream1;
+              stream1 << std::fixed << std::setprecision(10)
+              << rs.NumDataValues();
+              std::stringstream stream2;
+              stream2 << std::fixed << std::setprecision(10)
+              << rs.Variance();
+              buff = buff + stream1.str() + " " + stream2.str() + "\n";
+              lines++;
+            }
+            else {
+              std::ofstream var_out {outfile, std::ios_base::app};
+              var_out << std::fixed << std::setprecision(10) << buff;
+              lines = 0;
+              buff = "";
+            }
+          }
+        }
+        // variance_vector.push_back(rs.Variance());
+
+      }
+    }
+
+  }
+  if (dump > 0) {
+    std::ofstream var_out {outfile, std::ios_base::app};
+    var_out << std::fixed << std::setprecision(10) << buff;
+  }
+
+  nbs_found = rs.NumDataValues();
+  variance01 = rs.Variance();
+
+
+}
 
 
 
