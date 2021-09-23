@@ -11,5 +11,7 @@
 	"avgoutfile": "avgout.trj",
 	"nbList": true,
 	"neighbor list file": "nbl.txt",
-	"avgtraj": "avg.trj"
+	"avgtraj": "avg.trj",
+	"var01_only": true,
+	"avgtrajin": "avgin.trj"
 }
