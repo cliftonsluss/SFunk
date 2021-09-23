@@ -7,6 +7,7 @@
 #include "test.h"
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
 #include <cmath>
 #include <numeric>
 #include <algorithm>
@@ -128,7 +129,7 @@ if (nbList) {
       x = results.avg.pts[errors[i][1]].x;
       y = results.avg.pts[errors[i][1]].y;
       z = results.avg.pts[errors[i][1]].z;
-      
+
       pt = {errors[i][1]+1.0,x,y,z};
       PBC pbc2(&pt[1],len);
       std::vector<std::vector<double>> nbs2;
