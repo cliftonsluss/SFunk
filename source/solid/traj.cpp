@@ -72,11 +72,14 @@ if (!var01_only) {
   std::cout << "variance00= " << results.variance << std::endl;
   std::cout << "std00= " << pow(results.variance,0.5) << std::endl;
   frame = results.avg;
+  std::cout << "completed var00 calculation" << std::endl;
   if (avgdump) {
+    std::cout << "writing average frame to " << avgoutfile << std::endl;
     Trajectory dump(avgoutfile);
     dump.writeFrame(frame);
   }
 } else {
+  std::cout << "skipping var00 calculation" << std::endl;
   Trajectory traj(avgtrajin, num_atoms, 5);
   traj.getNextFrame(frame);
 }
@@ -93,6 +96,7 @@ std::vector<double> var_vec;
 // }
 
 if (nbList) {
+  std::cout << "generating neighbor list for error report" <<std::endl;
   std::vector<double> pt(4);
   std::vector<double> nb(4);
   double x,y,z;
@@ -182,11 +186,13 @@ if (nbList) {
 }
 
 if (var01_only) {
+  std::cout << "calculating var01 from nbs found in file" << std::endl;
   variance01kd_r_neigh<double>(datafile, num_atoms, num_frames,
     num_skipframes, num_nbs, nbs_found, variance01, outfile, skin, nbl, dump);
     std::cout << "variance01= " << variance01 << std::endl;
     std::cout << "std01= " << pow(variance01,0.5) << std::endl;
 } else {
+  std::cout << "calculating var01 from var00 output" << std::endl;
   variance01kd_r<double>(datafile, frame, num_atoms, num_frames,
     num_skipframes, num_nbs, nbs_found, variance01, outfile, skin, dump);
   // std::cout << "neighbor count= " << nbs_found << std::endl;
