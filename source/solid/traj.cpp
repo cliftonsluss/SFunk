@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 //lines below should all remove // to uncomment
 // create a resultSet obect to house our results
 resultSet<double> results;
-simFrame<double> frame;
+simFrame<double> frame1;
 std::vector<std::vector<size_t>> nbl;
 //NNeighbors<double>(filename, num_atoms, num_frames, num_nbs);
 // only results.avg is needed from variance00WK at thi point, that functionality
@@ -71,17 +71,19 @@ if (!var01_only) {
   std::cout << std::fixed << std::setprecision(10);
   std::cout << "variance00= " << results.variance << std::endl;
   std::cout << "std00= " << pow(results.variance,0.5) << std::endl;
-  frame = results.avg;
+  frame1 = results.avg;
   std::cout << "completed var00 calculation" << std::endl;
   if (avgdump) {
     std::cout << "writing average frame to " << avgoutfile << std::endl;
     Trajectory dump(avgoutfile);
-    dump.writeFrame(frame);
+    dump.writeFrame(frame1);
   }
 } else {
   std::cout << "skipping var00 calculation" << std::endl;
+  std::cout << num_atoms << std::endl;
   Trajectory traj(avgtrajin, num_atoms, 5);
-  traj.getNextFrame(frame);
+  traj.getNextFrame(frame1);
+  std::cout << frame1.box.xlen << std::endl;
 }
 
 
@@ -102,14 +104,15 @@ if (nbList) {
   double x,y,z;
   Trajectory CellTraj(avgtraj);
   simFrame<double> frame;
-  std::vector<double> len{frame.box.xlen,
-                          frame.box.ylen,
-                          frame.box.zlen};
+  std::vector<double> len{frame1.box.xlen,
+                          frame1.box.ylen,
+                          frame1.box.zlen};
+
 
   std::ofstream outputfile;
   outputfile.open(nblfile, std::ofstream::out);
   NeighborListGenerator NLG = NeighborListGenerator(
-                              frame, num_atoms, num_nbs,
+                              frame1, num_atoms, num_nbs,
                               skin);
   nbl = NLG.GetListOG();
   std::vector<std::vector<size_t>> errors = NLG.GetErrors();
@@ -124,9 +127,9 @@ if (nbList) {
     outputfile << "\n" << std::endl;
     for (int i = 0; i < errors.size(); i++){
 
-      x = frame.pts[errors[i][0]].x;
-      y = frame.pts[errors[i][0]].y;
-      z = frame.pts[errors[i][0]].z;
+      x = frame1.pts[errors[i][0]].x;
+      y = frame1.pts[errors[i][0]].y;
+      z = frame1.pts[errors[i][0]].z;
       pt = {errors[i][0]+1.0,x,y,z};
       PBC pbc1(&pt[1],len);
       std::vector<std::vector<double>> nbs1;
@@ -134,9 +137,9 @@ if (nbList) {
       outputfile << "neighbors of " << errors[i][0]+1 << std::endl;
 
       for (int j = 0; j < num_nbs; j++){
-        x = frame.pts[nbl[errors[i][0]][j]].x;
-        y = frame.pts[nbl[errors[i][0]][j]].y;
-        z = frame.pts[nbl[errors[i][0]][j]].z;
+        x = frame1.pts[nbl[errors[i][0]][j]].x;
+        y = frame1.pts[nbl[errors[i][0]][j]].y;
+        z = frame1.pts[nbl[errors[i][0]][j]].z;
         nb = {nbl[errors[i][0]][j]+1.0,x,y,z};
         pbc1.minimum_image(&nb[1]);
         nbs1.push_back(nb);
@@ -148,9 +151,9 @@ if (nbList) {
       frame = cell2frame(pt, nbs1);
       CellTraj.writeFrame(frame);
 
-      x = frame.pts[errors[i][1]].x;
-      y = frame.pts[errors[i][1]].y;
-      z = frame.pts[errors[i][1]].z;
+      x = frame1.pts[errors[i][1]].x;
+      y = frame1.pts[errors[i][1]].y;
+      z = frame1.pts[errors[i][1]].z;
 
       pt = {errors[i][1]+1.0,x,y,z};
       PBC pbc2(&pt[1],len);
@@ -162,9 +165,9 @@ if (nbList) {
       outputfile << "neighbors of " << errors[i][1]+1 << std::endl;
 
       for (int j = 0; j < num_nbs; j++){
-        x = frame.pts[nbl[errors[i][1]][j]].x;
-        y = frame.pts[nbl[errors[i][1]][j]].y;
-        z = frame.pts[nbl[errors[i][1]][j]].z;
+        x = frame1.pts[nbl[errors[i][1]][j]].x;
+        y = frame1.pts[nbl[errors[i][1]][j]].y;
+        z = frame1.pts[nbl[errors[i][1]][j]].z;
         nb = {nbl[errors[i][1]][j]+1.0,x,y,z};
         pbc2.minimum_image(&nb[1]);
         nbs2.push_back(nb);
@@ -193,7 +196,7 @@ if (var01_only) {
     std::cout << "std01= " << pow(variance01,0.5) << std::endl;
 } else {
   std::cout << "calculating var01 from var00 output" << std::endl;
-  variance01kd_r<double>(datafile, frame, num_atoms, num_frames,
+  variance01kd_r<double>(datafile, frame1, num_atoms, num_frames,
     num_skipframes, num_nbs, nbs_found, variance01, outfile, skin, dump);
   // std::cout << "neighbor count= " << nbs_found << std::endl;
   std::cout << "variance01= " << variance01 << std::endl;

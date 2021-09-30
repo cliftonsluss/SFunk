@@ -19,6 +19,7 @@ void Trajectory::getNextFrame(simFrame<double> &frame) {
   size_t n, nt;
   for (size_t i = 0; i < Trajectory::header; i++) {
     getline(inputfile, temp);
+    // std::cout << temp << std::endl;
   }
 
   // read min max in all dimensions, then redetermine min max to center
@@ -86,8 +87,8 @@ void Trajectory::writeFrame(simFrame<double> &frame, bool xyz) {
       if (i > 53) {
         atom = "b ";
       }
-      std::cout << atom << x << " " <<
-                 y << " " << z << "\n";
+      // std::cout << atom << x << " " <<
+      //            y << " " << z << "\n";
       outputfile << i << " " << atom << x << " " <<
                  y << " " << z << "\n";
     }

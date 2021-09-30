@@ -1,5 +1,5 @@
 #CC = g++
-#CFLAGS = -std-c++11
+#CFLAGS = -std=c++11
 CC	 = clang++
 CFLAGS	 = -std=c++11 -I/Users/clifton/Dropbox/Grad_school/entropy/lammps_EF/source/include/
 #LDFLAGS = -l
