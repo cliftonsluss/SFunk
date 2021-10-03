@@ -17,6 +17,7 @@ class NeighborListGenerator {
     std::vector<std::vector<size_t>> GetListOG();
     std::vector<std::vector<size_t>> GetListSkin();
     std::vector<std::vector<size_t>> GetErrors();
+    // void WriteErrors(std::string &errorfile);
 
   private:
     PBCPointCloudGenerator PBCPCG;

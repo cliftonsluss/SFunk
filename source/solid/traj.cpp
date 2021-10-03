@@ -65,8 +65,13 @@ std::vector<std::vector<size_t>> nbl;
 // only results.avg is needed from variance00WK at thi point, that functionality
 // will be broken out into a more compact method at a later date
 
+size_t nbs_found;
+double variance01;
+std::vector<double> var_vec;
+
 if (!var01_only) {
-  variance00WK<double>(datafile, num_atoms, num_frames, num_skipframes, results);
+  variance00WK<double>(datafile, num_atoms,
+    num_frames, num_skipframes, results);
   // values below not needed anymore but still being reported for reference
   std::cout << std::fixed << std::setprecision(10);
   std::cout << "variance00= " << results.variance << std::endl;
@@ -83,14 +88,24 @@ if (!var01_only) {
   std::cout << num_atoms << std::endl;
   Trajectory traj(avgtrajin, num_atoms, 5);
   traj.getNextFrame(frame1);
-  std::cout << frame1.box.xlen << std::endl;
+  NeighborListGenerator NLG = NeighborListGenerator(
+                              frame1, num_atoms, num_nbs,
+                              skin);
+  nbl = NLG.GetListOG();
+  std::cout << "calculating var01 from nbs found in file"
+  << std::endl;
+  variance01kd_r_nbl<double>(datafile,
+    num_atoms, num_frames,
+    num_skipframes, num_nbs,
+    nbs_found, variance01, outfile, skin, nbl, dump);
+  std::cout << "variance01= " << variance01 << std::endl;
+  std::cout << "std01= " << pow(variance01,0.5) << std::endl;
+  return 0;
 }
 
 
 
-size_t nbs_found;
-double variance01;
-std::vector<double> var_vec;
+
 
 // if (avgdump) {
 //   Trajectory dump(avgoutfile);
@@ -188,20 +203,20 @@ if (nbList) {
 
 }
 
-if (var01_only) {
-  std::cout << "calculating var01 from nbs found in file" << std::endl;
-  variance01kd_r_neigh<double>(datafile, num_atoms, num_frames,
-    num_skipframes, num_nbs, nbs_found, variance01, outfile, skin, nbl, dump);
-    std::cout << "variance01= " << variance01 << std::endl;
-    std::cout << "std01= " << pow(variance01,0.5) << std::endl;
-} else {
-  std::cout << "calculating var01 from var00 output" << std::endl;
-  variance01kd_r<double>(datafile, frame1, num_atoms, num_frames,
-    num_skipframes, num_nbs, nbs_found, variance01, outfile, skin, dump);
-  // std::cout << "neighbor count= " << nbs_found << std::endl;
-  std::cout << "variance01= " << variance01 << std::endl;
-  std::cout << "std01= " << pow(variance01,0.5) << std::endl;
-}
+// if (var01_only) {
+//   std::cout << "calculating var01 from nbs found in file" << std::endl;
+//   variance01kd_r_nbl<double>(datafile, num_atoms, num_frames,
+//     num_skipframes, num_nbs, nbs_found, variance01, outfile, skin, nbl, dump);
+//     std::cout << "variance01= " << variance01 << std::endl;
+//     std::cout << "std01= " << pow(variance01,0.5) << std::endl;
+// } else {
+std::cout << "calculating var01 from var00 output" << std::endl;
+variance01kd_r<double>(datafile, frame1, num_atoms, num_frames,
+  num_skipframes, num_nbs, nbs_found, variance01, outfile, skin, dump);
+// std::cout << "neighbor count= " << nbs_found << std::endl;
+std::cout << "variance01= " << variance01 << std::endl;
+std::cout << "std01= " << pow(variance01,0.5) << std::endl;
+// }
 
 // for (size_t i = 0; i < var_vec.size(); i++){
 //   std::cout << i+1.0 << ", " << var_vec[i] << std::endl;

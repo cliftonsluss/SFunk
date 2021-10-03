@@ -988,7 +988,7 @@ void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t 
 }
 
 template <typename T>
-void variance01kd_r_neigh(std::string &filename, const size_t N,
+void variance01kd_r_nbl(std::string &filename, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs,
     size_t &nbs_found, double &variance01, std::string &outfile, double skin,
     std::vector<std::vector<size_t>> nbs, int dump=0, float eps=0.0001) {

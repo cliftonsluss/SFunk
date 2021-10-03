@@ -400,6 +400,15 @@ TEST(PBC_test, minimum_image){
   ASSERT_EQ(pts1,pts);
 }
 
+TEST_F(Var01_test, From_saved_frame) {
+  variance01kd_r_nbl<double>(datafile,
+    num_atoms, num_frames,
+    num_skipframes, num_nbs,
+    nbs_found, variance01, outfile, skin, nbl, dump);
+  std::cout << "variance01= " << variance01 << std::endl;
+  std::cout << "std01= " << pow(variance01,0.5) << std::endl;
+  ASSERT_EQ(1,1);
+}
 
 
 // test that correct number of pairs found
