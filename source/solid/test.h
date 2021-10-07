@@ -40,6 +40,7 @@
 #include "PBCPointCloud_generator.h"
 #include "traj_reader.h"
 #include "structures.h"
+#include "PBC.h"
 
 #ifndef TEST_H
 #define TEST_H
@@ -456,7 +457,7 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
   traj.skipFrames(num_skipframes);
   traj.getNextFrame(frame);
   frame0 = frame;
-  result.avg.pts.resize(num_atoms);
+  result.avg.points.resize(num_atoms, std::vector<double>(3));
   result.avg.num_atoms = num_atoms;
   result.avg.box.xmin = frame.box.xmin;
   result.avg.box.xmax = frame.box.xmax;
@@ -464,9 +465,12 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
   result.avg.box.ymax = frame.box.ymax;
   result.avg.box.zmin = frame.box.zmin;
   result.avg.box.zmax = frame.box.zmax;
+
   xlen = frame.box.xlen;
   ylen = frame.box.ylen;
   zlen = frame.box.zlen;
+
+  std::vector<double> len = {xlen,ylen,zlen};
 
 
   // for all points in first frame place them as initial values of the average
@@ -474,9 +478,9 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
   // Points are already scaled by Trajectory::getNextFrame method
   for (int j = 0; j < num_atoms; j++) {
     //cout << frame0.pts[j].x << std::endl;
-    result.avg.pts[j].x = frame0.pts[j].x;
-    result.avg.pts[j].y = frame0.pts[j].y;
-    result.avg.pts[j].z = frame0.pts[j].z;
+    result.avg.points[j][0] = frame0.points[j][0];
+    result.avg.points[j][1] = frame0.points[j][1];
+    result.avg.points[j][2] = frame0.points[j][2];
   }
   diff_sqrd = 0;
   double div_3 = 1.0/3.0;
@@ -487,12 +491,12 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
 
     int k = 0;
     for (int j = 0; j < num_atoms; j++) {
-      xa = frame0.pts[j].x;
-      xb = frame.pts[j].x;
-      ya = frame0.pts[j].y;
-      yb = frame.pts[j].y;
-      za = frame0.pts[j].z;
-      zb = frame.pts[j].z;
+      xa = frame0.points[j][0];
+      xb = frame.points[j][0];
+      ya = frame0.points[j][1];
+      yb = frame.points[j][1];
+      za = frame0.points[j][2];
+      zb = frame.points[j][2];
       if ((xa - xb) < (-xlen*0.5)){
 	      xb = xb - xlen;
       }
@@ -512,38 +516,51 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
 	      zb = zb + zlen;
       }
 
-      old_avgx = result.avg.pts[j].x;
-      old_avgy = result.avg.pts[j].y;
-      old_avgz = result.avg.pts[j].z;
-      result.avg.pts[j].x = old_avgx + (xb - result.avg.pts[j].x)/i;
-      result.avg.pts[j].y = old_avgy + (yb - result.avg.pts[j].y)/i;
-      result.avg.pts[j].z = old_avgz + (zb - result.avg.pts[j].z)/i;
-      diff_sqrd = diff_sqrd + ((xb - old_avgx)*(xb - result.avg.pts[j].x)
-	        + (yb - old_avgy)*(yb - result.avg.pts[j].y)
-          + (zb - old_avgz)*(zb - result.avg.pts[j].z));
+      old_avgx = result.avg.points[j][0];
+      old_avgy = result.avg.points[j][1];
+      old_avgz = result.avg.points[j][2];
+      result.avg.points[j][0] = old_avgx + (xb - result.avg.points[j][0])/i;
+      result.avg.points[j][1] = old_avgy + (yb - result.avg.points[j][1])/i;
+      result.avg.points[j][2] = old_avgz + (zb - result.avg.points[j][2])/i;
+      diff_sqrd = diff_sqrd + ((xb - old_avgx)*(xb - result.avg.points[j][0])
+	        + (yb - old_avgy)*(yb - result.avg.points[j][1])
+          + (zb - old_avgz)*(zb - result.avg.points[j][2]));
     }
   }
 
+// we want to make sure the points in our average frame are
+// contained in the original simulation box limits so we apply
+// the minium image criterium
+
   for (int j = 0; j < num_atoms; j++){
-    if (result.avg.pts[j].x < result.avg.box.xmin) {
-result.avg.pts[j].x = result.avg.pts[j].x + xlen;
-    }
-    if (result.avg.pts[j].x > result.avg.box.xmax) {
-result.avg.pts[j].x = result.avg.pts[j].x - xlen;
-    }
-    if (result.avg.pts[j].y < result.avg.box.ymin) {
-result.avg.pts[j].y = result.avg.pts[j].y + ylen;
-    }
-    if (result.avg.pts[j].y > result.avg.box.ymax) {
-result.avg.pts[j].y = result.avg.pts[j].y - ylen;
-    }
-    if (result.avg.pts[j].z < result.avg.box.zmin) {
-result.avg.pts[j].z = result.avg.pts[j].z + zlen;
-    }
-    if (result.avg.pts[j].z > result.avg.box.zmax) {
-result.avg.pts[j].z = result.avg.pts[j].z - zlen;
+    for (int k = 0; k < 3; k++){
+      if (result.avg.points[j][k] < result.avg.box.xmin) {
+  result.avg.points[j][k] = result.avg.points[j][k] + len[k];
+      }
+      if (result.avg.points[j][k] < result.avg.box.xmin) {
+  result.avg.points[j][k] = result.avg.points[j][k] + len[k];
+      }
     }
   }
+//     if (result.avg.points[j][0] < result.avg.box.xmin) {
+// result.avg.points[j][0] = result.avg.points[j][0] + xlen;
+//     }
+//     if (result.avg.points[j][0] > result.avg.box.xmax) {
+// result.avg.points[j][0] = result.avg.points[j][0] - xlen;
+//     }
+//     if (result.avg.points[j][1] < result.avg.box.ymin) {
+// result.avg.points[j][1] = result.avg.points[j][1] + ylen;
+//     }
+//     if (result.avg.points[j][1] > result.avg.box.ymax) {
+// result.avg.points[j][1] = result.avg.points[j][1] - ylen;
+//     }
+//     if (result.avg.points[j][2] < result.avg.box.zmin) {
+// result.avg.points[j][2] = result.avg.points[j][2] + zlen;
+//     }
+//     if (result.avg.points[j][2] > result.avg.box.zmax) {
+// result.avg.points[j][2] = result.avg.points[j][2] - zlen;
+//     }
+//   }
   result.avg.box.xlen = xlen;
   result.avg.box.ylen = ylen;
   result.avg.box.zlen = zlen;
@@ -898,57 +915,19 @@ void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t 
     xlen = frame.box.xlen;
     ylen = frame.box.ylen;
     zlen = frame.box.ylen;
+    std::vector<double> len = {xlen,ylen,zlen};
     // std::cout << "nbs = " << nbs << std::endl;
     for (size_t j = 0; j < N; j++) {
+      PBC pbc(&frame.points[j][0],len);
       for (size_t k = 0; k < num_nbs; k++) {
         // grab our reference point x,y,z coordinates and coordinates of it's
         // neighbors
-        xa = frame.pts[i].x;
-        xb = frame.pts[nbs[i][k]].x;
-        ya = frame.pts[i].y;
-        yb = frame.pts[nbs[i][k]].y;
-        za = frame.pts[i].z;
-        zb = frame.pts[nbs[i][k]].z;
-        // apply minimum image criteria and calculate neighbor distances in xyz
-        if ((xa-xb) < (-xlen*0.5)) {
-  	      xb = xb - xlen;
-        }
-        if ((xa-xb) > (xlen*0.5)){
-  	      xb = xb + xlen;
-        }
-        if ((ya-yb) < (-ylen*0.5)){
-  	      yb = yb - ylen;
-        }
-        if ((ya-yb) > (ylen*0.5)){
-  	      yb = yb + ylen;
-        }
-        if ((za-zb) < (-zlen*0.5)){
-  	      zb = zb - zlen;
-        }
-        if ((za-zb) > (zlen*0.5)){
-  	      zb = zb + zlen;
-        }
-        // we will calculate the average sum of the squared component distances
-        // and then take the square root of the final result
-        xdist_2 = pow((xa-xb),2.0);
-        ydist_2 = pow((ya-yb),2.0);
-        zdist_2 = pow((za-zb),2.0);
-        dist = pow(xdist_2 + ydist_2 + zdist_2, 0.5);
+        dist = pbc.minimum_image_L2_distance(&frame.points[nbs[j][k]][0]);
 
-        // debuggin line?
         var_check = rs.Variance();
 
         rs.Push(dist);
         n++;
-        // if (rs.NumDataValues() > min_count){
-        //   if (std::abs(var_check - rs.Variance()) < error){
-        //     nbs_found = rs.NumDataValues();
-        //     variance01 = rs.Variance();
-        //     std::cout << "Achieved minimum error with " << nbs_found << " pairs\n";
-        //     std::cout << "variance = " << rs.Variance() << "\n";
-        //     return;
-        //   }
-        // }
 
         if (dump > 0) {
           if (rs.NumDataValues() % dump == 0) {
@@ -992,14 +971,12 @@ void variance01kd_r_nbl(std::string &filename, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs,
     size_t &nbs_found, double &variance01, std::string &outfile, double skin,
     std::vector<std::vector<size_t>> nbs, int dump=0, float eps=0.0001) {
-  // std::cout << dump << "\n";
-  // PointCloud<T> cloud;
+
   if (!outfile.empty()) {
     std::ofstream var_out {outfile};
     var_out << "npairs\t   variance\n";
   }
 
-  // double skin = 6.0;
   size_t header = 5;
   size_t n = 0;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
@@ -1014,13 +991,6 @@ void variance01kd_r_nbl(std::string &filename, const size_t N,
   std::vector<size_t> idxs;
   std::vector<size_t> neigh_idxs;
 
-  // NeighborListGenerator NL;
-  // NL = NeighborListGenerator(avg_frame, N, num_nbs, skin);
-  // std::vector<std::vector<size_t>> nbs = NL.GetListOG();
-
-  // std::vector<std::vector<size_t>> nbs = nlist.nbs_og;
-  // neigh_idxs = nlist.nbs;
-  // size_t nbs = nlist.nnbs;
   RunningStat rs;
   traj.skipFrames(num_skipframes);
   std::string buff = "";
@@ -1033,57 +1003,19 @@ void variance01kd_r_nbl(std::string &filename, const size_t N,
     xlen = frame.box.xlen;
     ylen = frame.box.ylen;
     zlen = frame.box.ylen;
+    std::vector<double> len = {xlen,ylen,zlen};
     // std::cout << "nbs = " << nbs << std::endl;
     for (size_t j = 0; j < N; j++) {
+      PBC pbc(&frame.points[j][0],len);
       for (size_t k = 0; k < num_nbs; k++) {
         // grab our reference point x,y,z coordinates and coordinates of it's
         // neighbors
-        xa = frame.pts[i].x;
-        xb = frame.pts[nbs[i][k]].x;
-        ya = frame.pts[i].y;
-        yb = frame.pts[nbs[i][k]].y;
-        za = frame.pts[i].z;
-        zb = frame.pts[nbs[i][k]].z;
-        // apply minimum image criteria and calculate neighbor distances in xyz
-        if ((xa-xb) < (-xlen*0.5)) {
-  	      xb = xb - xlen;
-        }
-        if ((xa-xb) > (xlen*0.5)){
-  	      xb = xb + xlen;
-        }
-        if ((ya-yb) < (-ylen*0.5)){
-  	      yb = yb - ylen;
-        }
-        if ((ya-yb) > (ylen*0.5)){
-  	      yb = yb + ylen;
-        }
-        if ((za-zb) < (-zlen*0.5)){
-  	      zb = zb - zlen;
-        }
-        if ((za-zb) > (zlen*0.5)){
-  	      zb = zb + zlen;
-        }
-        // we will calculate the average sum of the squared component distances
-        // and then take the square root of the final result
-        xdist_2 = pow((xa-xb),2.0);
-        ydist_2 = pow((ya-yb),2.0);
-        zdist_2 = pow((za-zb),2.0);
-        dist = pow(xdist_2 + ydist_2 + zdist_2, 0.5);
+        dist = pbc.minimum_image_L2_distance(&frame.points[nbs[j][k]][0]);
 
-        // debuggin line?
         var_check = rs.Variance();
 
         rs.Push(dist);
         n++;
-        // if (rs.NumDataValues() > min_count){
-        //   if (std::abs(var_check - rs.Variance()) < error){
-        //     nbs_found = rs.NumDataValues();
-        //     variance01 = rs.Variance();
-        //     std::cout << "Achieved minimum error with " << nbs_found << " pairs\n";
-        //     std::cout << "variance = " << rs.Variance() << "\n";
-        //     return;
-        //   }
-        // }
 
         if (dump > 0) {
           if (rs.NumDataValues() % dump == 0) {
@@ -1118,7 +1050,7 @@ void variance01kd_r_nbl(std::string &filename, const size_t N,
 
   nbs_found = rs.NumDataValues();
   variance01 = rs.Variance();
-
+  std::cout << n << std::endl;
 
 }
 

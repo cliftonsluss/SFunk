@@ -75,6 +75,8 @@ struct simFrame
 	  T  x,y,z;
 	};
 
+  std::vector<std::vector <double>> points;
+
   std::vector<size_t> idx;
 
 	std::vector<Point>  pts;

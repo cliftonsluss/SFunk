@@ -1,17 +1,17 @@
 {
 	"neighbors": 8,
 	"atoms": 93312,
-	"frames": 1,
+	"frames": 10,
 	"skipframes": 0,
 	"skin": 6.0,
 	"datafile": "Fe_dummy_long_2.trj",
 	"outfile": "test.out",
-	"dump": 10,
-	"avgdump": true,
+	"dump": 10000,
+	"avgdump": false,
 	"avgoutfile": "avgout.trj",
-	"nbList": true,
+	"nbList": false,
 	"neighbor list file": "nbl.txt",
 	"avgtraj": "avg.trj",
 	"var01_only": true,
-	"avgtrajin": "avgin.trj"
+	"avgtrajin": "avgout.trj"
 }

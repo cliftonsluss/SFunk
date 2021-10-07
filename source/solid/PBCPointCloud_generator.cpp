@@ -23,18 +23,24 @@ PBCPointCloudGenerator::PBCPointCloudGenerator(simFrame<double> &frame,
   // getNextFrame rescales these so if feeding frames from getNextFrame into
   // populatePointCloudPBC make sure to set scaled = true
     for (int i = 0; i < frame.num_atoms; i++){
-      cloud.pts[i].x = frame.pts[i].x;
-      cloud.pts[i].y = frame.pts[i].y;
-      cloud.pts[i].z = frame.pts[i].z;
+      // cloud.pts[i].x = frame.pts[i].x;
+      // cloud.pts[i].y = frame.pts[i].y;
+      // cloud.pts[i].z = frame.pts[i].z;
+      cloud.pts[i].x = frame.points[i][0];
+      cloud.pts[i].y = frame.points[i][1];
+      cloud.pts[i].z = frame.points[i][2];
       cloud.pbc_idx_map[i] = i;
     }
   }
   else {
   // this frame was created with fractional coordinates
     for (int i = 0; i < frame.num_atoms; i++) {
-      cloud.pts[i].x = (frame.pts[i].x * frame.box.xlen) + frame.box.xmin;
-      cloud.pts[i].y = (frame.pts[i].y * frame.box.ylen) + frame.box.ymin;
-      cloud.pts[i].z = (frame.pts[i].z * frame.box.zlen) + frame.box.zmin;
+      // cloud.pts[i].x = (frame.pts[i].x * frame.box.xlen) + frame.box.xmin;
+      // cloud.pts[i].y = (frame.pts[i].y * frame.box.ylen) + frame.box.ymin;
+      // cloud.pts[i].z = (frame.pts[i].z * frame.box.zlen) + frame.box.zmin;
+      cloud.pts[i].x = (frame.points[i][0] * frame.box.xlen) + frame.box.xmin;
+      cloud.pts[i].y = (frame.points[i][1] * frame.box.ylen) + frame.box.ymin;
+      cloud.pts[i].z = (frame.points[i][2] * frame.box.zlen) + frame.box.zmin;
       cloud.pbc_idx_map[i] = i;
     }
   }

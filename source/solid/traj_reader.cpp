@@ -45,6 +45,7 @@ void Trajectory::getNextFrame(simFrame<double> &frame) {
   // std::cout << "zlen = " << frame.box.zlen << std::endl;
   inputfile >> temp >> temp >> temp >> temp >> temp >> temp >> temp;
   frame.pts.resize(num_atoms);
+  frame.points.resize(num_atoms);
   frame.atms.resize(num_atoms);
   frame.num_atoms = num_atoms;
 
@@ -56,9 +57,10 @@ void Trajectory::getNextFrame(simFrame<double> &frame) {
     x = xc*frame.box.xlen + frame.box.xmin;
     y = yc*frame.box.ylen + frame.box.ymin;
     z = zc*frame.box.zlen + frame.box.zmin;
-    frame.pts[n-1].x = x;
-    frame.pts[n-1].y = y;
-    frame.pts[n-1].z = z;
+    // frame.pts[n-1].x = x;
+    // frame.pts[n-1].y = y;
+    // frame.pts[n-1].z = z;
+    frame.points[n-1] = {x,y,z};
   }
   getline(inputfile, temp);
 }
@@ -81,16 +83,21 @@ void Trajectory::writeFrame(simFrame<double> &frame, bool xyz) {
     outputfile << frame.num_atoms << "\n\n";
     outputfile << std::fixed << std::setprecision(7);
     for (size_t i = 0; i < frame.num_atoms; i++){
-      x = frame.pts[i].x;
-      y = frame.pts[i].y;
-      z = frame.pts[i].z;
+      // x = frame.pts[i].x;
+      // y = frame.pts[i].y;
+      // z = frame.pts[i].z;
+      // need to add vector based points code in here
+      // frame.points[i];
       if (i > 53) {
         atom = "b ";
       }
       // std::cout << atom << x << " " <<
       //            y << " " << z << "\n";
-      outputfile << i << " " << atom << x << " " <<
-                 y << " " << z << "\n";
+      // outputfile << i << " " << atom << x << " " <<
+      //            y << " " << z << "\n";
+      outputfile << i << " " << atom << frame.points[i][0] << " " <<
+                 frame.points[i][1] << " "
+                 << frame.points[i][2] << "\n";
     }
   } else {
     outputfile << std::fixed << std::setprecision(6);
@@ -106,9 +113,13 @@ void Trajectory::writeFrame(simFrame<double> &frame, bool xyz) {
     outputfile << "ITEM: ATOMS id type xs ys zs\n";
     outputfile << std::fixed << std::setprecision(7);
     for (size_t i = 0; i < frame.num_atoms; i++){
-      x = (frame.pts[i].x - frame.box.xmin)/frame.box.xlen;
-      y = (frame.pts[i].y - frame.box.ymin)/frame.box.ylen;
-      z = (frame.pts[i].z - frame.box.zmin)/frame.box.zlen;
+      // x = (frame.pts[i].x - frame.box.xmin)/frame.box.xlen;
+      // y = (frame.pts[i].y - frame.box.ymin)/frame.box.ylen;
+      // z = (frame.pts[i].z - frame.box.zmin)/frame.box.zlen;
+      // need to add vector based points code in here
+      x = (frame.points[i][0] - frame.box.xmin)/frame.box.xlen;
+      y = (frame.points[i][1] - frame.box.ymin)/frame.box.ylen;
+      z = (frame.points[i][1] - frame.box.zmin)/frame.box.zlen;
       if (frame.idx.size() > 0){
         outputfile << frame.idx[i] << " 1 " << x << " " <<
                    y << " " << z << "\n";
