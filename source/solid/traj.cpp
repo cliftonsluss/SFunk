@@ -99,7 +99,7 @@ if (!var01_only) {
     num_atoms, num_frames,
     num_skipframes, num_nbs,
     nbs_found, variance01, variance01_xyz, outfile, skin, nbl, dump);
-  std::cout << std::fixed << std::setprecision(10);
+  std::cout << std::fixed << std::setprecision(20);
   std::cout << "variance01= " << variance01 << std::endl;
   std::cout << "var01_x= " << variance01_xyz[0] << std::endl;
   std::cout << "var01_y= " << variance01_xyz[1] << std::endl;
