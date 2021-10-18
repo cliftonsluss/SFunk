@@ -67,6 +67,7 @@ std::vector<std::vector<size_t>> nbl;
 
 size_t nbs_found;
 double variance01;
+std::vector<double> variance01_xyz;
 std::vector<double> var_vec;
 
 if (!var01_only) {
@@ -97,7 +98,7 @@ if (!var01_only) {
   variance01kd_r_nbl<double>(datafile,
     num_atoms, num_frames,
     num_skipframes, num_nbs,
-    nbs_found, variance01, outfile, skin, nbl, dump);
+    nbs_found, variance01, variance01_xyz, outfile, skin, nbl, dump);
   std::cout << std::fixed << std::setprecision(10);
   std::cout << "variance01= " << variance01 << std::endl;
   std::cout << "std01= " << pow(variance01,0.5) << std::endl;
