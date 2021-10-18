@@ -245,7 +245,7 @@ TEST_F(populatePointCloudPBCTest, Fe_map){
 //   ASSERT_EQ(nlist_Fe.nnbs, neighbors_Fe);
 // }
 
-// TEST_F(NeighborListTest, Si_neighbors){
+TEST_F(NeighborListTest, Si_neighbors){
 //   Trajectory traj(datafile_Si, num_atoms_Si, 5);
 //   traj.skipFrames(0);
 //   traj.getNextFrame(frame_si);
@@ -257,6 +257,100 @@ TEST_F(populatePointCloudPBCTest, Fe_map){
 //   neighbors_Si =  num_atoms_Si * num_nbs_Si/2;
 //   nlist_Si = NL_Si.GetList();
 //   ASSERT_EQ(nlist_Si.nnbs, neighbors_Si);
+  Trajectory traj(datafile_Si, num_atoms_Si, 5);
+  traj.skipFrames(0);
+  traj.getNextFrame(frame_si);
+  NL_Fe = NeighborListGenerator(
+                        frame_si, num_atoms_Si, num_nbs_Si,
+                        skin);
+  // PointCloud<double> cloud;
+  // populatePointCloudSkin(cloud, frame_fe, skin);
+  neighbors_Si =  num_atoms_Si * num_nbs_Si;
+  nlist_Si = NL_Si.GetListOG();
+  std::vector<std::vector<size_t>> errors_Si;
+  errors_Si = NL_Si.GetErrors();
+  std::vector<double> pt(4);
+  std::vector<double> nb(4);
+
+  std::vector<double> temp(4);
+  double x,y,z;
+  std::string outfile = "celltest_Si.traj";
+  Trajectory CellTraj(outfile);
+  simFrame<double> frame;
+  std::vector<double> len{frame_fe.box.xlen,
+                          frame_fe.box.ylen,
+                          frame_fe.box.zlen};
+
+  // std::cout << "box length" << std::endl;
+  // std::cout << len[0] << ", " << len[1] << ", " << len[2] << std::endl;
+  // std::cout << errors_Fe.size() << std::endl;
+  // std::cout << "\n";
+
+  for (int i = 0; i < errors_Si.size(); i++){
+
+    // std::cout << errors_Fe[i][0] << ", "
+    // << errors_Fe[i][1] << "\n" << std::endl;
+    // std::cout << errors_Fe[i][0]+1 << " neighbors are" <<std::endl;
+    x = frame_si.pts[errors_Si[i][0]].x;
+    y = frame_si.pts[errors_Si[i][0]].y;
+    z = frame_si.pts[errors_Si[i][0]].z;
+    // std::cout << "central point" << std::endl;
+    pt = {errors_Si[i][0]+1.0,x,y,z};
+    // std::cout << pt[0] << " | " << pt[1] << ", " << pt[2] << ", " << pt[3] << std::endl;
+    PBC pbc1(&pt[1],len);
+    std::vector<std::vector<double>> nbs1;
+    // std::cout << "has neighbors" << std::endl;
+
+    for (int j = 0; j < num_nbs_bcc; j++){
+      // std::cout << "ParticleIdentifier==" << nlist_Fe[errors_Fe[i][0]][j]+1
+      // << " ||" << std::endl;
+      x = frame_si.pts[nlist_Si[errors_Si[i][0]][j]].x;
+      y = frame_si.pts[nlist_Si[errors_Si[i][0]][j]].y;
+      z = frame_si.pts[nlist_Si[errors_Si[i][0]][j]].z;
+      nb = {nlist_Si[errors_Si[i][0]][j]+1.0,x,y,z};
+      // std::cout << nb[0] << " | " << nb[1] << ", " << nb[2] << ", " << nb[3] << std::endl;
+      pbc1.minimum_image(&nb[1]);
+      // std::cout << nb[0] << " | " << nb[1] << ", " << nb[2] << ", " << nb[3] << std::endl;
+      nbs1.push_back(nb);
+    }
+    std::cout << nbs1.size() << std::endl;
+    std::cout << "\n";
+    frame = cell2frame(pt, nbs1);
+    CellTraj.writeFrame(frame,false);
+
+    // std::cout << "ParticleIdentifier==" << errors_Fe[i][0]+1
+    // << "\n" << std::endl;
+    // std::cout << errors_Fe[i][1]+1 << " neighbors are" <<std::endl;
+    x = frame_si.pts[errors_Si[i][1]].x;
+    y = frame_si.pts[errors_Si[i][1]].y;
+    z = frame_si.pts[errors_Si[i][1]].z;
+    // std::cout << "central point" << std::endl;
+    pt = {errors_Si[i][1]+1.0,x,y,z};
+    // std::cout << pt[0] << " | " << pt[1] << ", " << pt[2] << ", " << pt[3] << std::endl;
+    // std::cout << "has neighbors" << std::endl;
+    PBC pbc2(&pt[1],len);
+    std::vector<std::vector<double>> nbs2;
+    for (int j = 0; j < num_nbs_bcc; j++){
+      x = frame_si.pts[nlist_Si[errors_Si[i][1]][j]].x;
+      y = frame_si.pts[nlist_Si[errors_Si[i][1]][j]].y;
+      z = frame_si.pts[nlist_Si[errors_Si[i][1]][j]].z;
+      nb = {nlist_Si[errors_Si[i][1]][j]+1.0,x,y,z};
+      // std::cout << nb[0] << " | " << nb[1] << ", " << nb[2] << ", " << nb[3] << std::endl;
+      pbc2.minimum_image(&nb[1]);
+      // std::cout << nb[0] << " | " << nb[1] << ", " << nb[2] << ", " << nb[3] << std::endl;
+      nbs2.push_back(nb);
+      // std::cout << "ParticleIdentifier==" << nlist_Fe[errors_Fe[i][1]][j]+1
+      // << " ||" << std::endl;
+    }
+    // std::cout << nbs2.size() << std::endl;
+    // std::cout << "\n";
+    frame = cell2frame(pt, nbs2);
+    CellTraj.writeFrame(frame,false);
+    // std::cout << "ParticleIdentifier==" << errors_Fe[i][1]+1
+    // << "\n" << std::endl;
+  }
+ASSERT_EQ(nlist_Si.size(), num_atoms_Si);
+}
 // }
 //
 // TEST_F(NeighborListTest, Cu_neighbors){
@@ -404,12 +498,28 @@ TEST_F(Var01_test, From_saved_frame) {
   variance01kd_r_nbl<double>(datafile,
     num_atoms, num_frames,
     num_skipframes, num_nbs,
-    nbs_found, variance01, outfile, skin, nbl, dump);
+    nbs_found, variance01, variance01_xyz, outfile, skin, nbl, dump);
   std::cout << "variance01= " << variance01 << std::endl;
+  std::cout << "var01_x= " << variance01_xyz[0] << std::endl;
+  std::cout << "var01_y= " << variance01_xyz[1] << std::endl;
+  std::cout << "var01_z= " << variance01_xyz[2] << std::endl;
   std::cout << "std01= " << pow(variance01,0.5) << std::endl;
   ASSERT_EQ(1,1);
 }
 
+TEST_F(Var01_test, From_saved_Si) {
+  variance01kd_r_nbl<double>(datafile_Si,
+    num_atoms_Si, num_frames_Si,
+    num_skipframes, num_nbs_Si,
+    nbs_found_Si, variance01_Si, variance01_xyz_Si, outfile,
+    skin_Si, nbl_Si, dump);
+  std::cout << "variance01= " << variance01_Si << std::endl;
+  std::cout << "var01_x= " << variance01_xyz_Si[0] << std::endl;
+  std::cout << "var01_y= " << variance01_xyz_Si[1] << std::endl;
+  std::cout << "var01_z= " << variance01_xyz_Si[2] << std::endl;
+  std::cout << "std01= " << pow(variance01_Si,0.5) << std::endl;
+  ASSERT_EQ(1,1);
+}
 
 // test that correct number of pairs found
 // test that correct variance calculated

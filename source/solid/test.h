@@ -991,7 +991,7 @@ void variance01kd_r_nbl(std::string &filename, const size_t N,
 
   std::vector<size_t> idxs;
   std::vector<size_t> neigh_idxs;
-  std::vector<double> dist_comp;
+  std::vector<double> dist_xyz;
 
   RunningStat rs;
   RunningStat rsx;
@@ -1017,14 +1017,14 @@ void variance01kd_r_nbl(std::string &filename, const size_t N,
         // neighbors
         dist = pbc.minimum_image_L2_distance(&frame.points[nbs[j][k]][0]);
 
-        dist_comp = pbc.minimum_image_xyz_distance(&frame.points[nbs[j][k]][0]);
+        dist_xyz = pbc.minimum_image_xyz_distance(&frame.points[nbs[j][k]][0]);
 
         // var_check = rs.Variance();
 
         rs.Push(dist);
-        rsx.Push(dist_comp[0]);
-        rsy.Push(dist_comp[1]);
-        rsz.Push(dist_comp[2]);
+        rsx.Push(dist_xyz[0]);
+        rsy.Push(dist_xyz[1]);
+        rsz.Push(dist_xyz[2]);
         n++;
 
         if (dump > 0) {
