@@ -101,6 +101,9 @@ if (!var01_only) {
     nbs_found, variance01, variance01_xyz, outfile, skin, nbl, dump);
   std::cout << std::fixed << std::setprecision(10);
   std::cout << "variance01= " << variance01 << std::endl;
+  std::cout << "var01_x= " << variance01_xyz[0] << std::endl;
+  std::cout << "var01_y= " << variance01_xyz[1] << std::endl;
+  std::cout << "var01_z= " << variance01_xyz[2] << std::endl;
   std::cout << "std01= " << pow(variance01,0.5) << std::endl;
   return 0;
 }
