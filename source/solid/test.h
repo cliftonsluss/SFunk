@@ -969,8 +969,9 @@ void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t 
 template <typename T>
 void variance01kd_r_nbl(std::string &filename, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs,
-    size_t &nbs_found, double &variance01, std::string &outfile, double skin,
-    std::vector<std::vector<size_t>> nbs, int dump=0, float eps=0.0001) {
+    size_t &nbs_found, double &variance01, std::vector<double> &variance01_xyz,
+    std::string &outfile, double skin, std::vector<std::vector<size_t>> nbs,
+    int dump=0, float eps=0.0001) {
 
   if (!outfile.empty()) {
     std::ofstream var_out {outfile};
@@ -980,7 +981,7 @@ void variance01kd_r_nbl(std::string &filename, const size_t N,
   size_t header = 5;
   size_t n = 0;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
-      dist, variance;
+      dist, variance, variancex, variancey, variancez;
   double diff_sqrd = 0.0;
   double old_avg = 0.0;
   double avg = 0.0;
@@ -990,8 +991,12 @@ void variance01kd_r_nbl(std::string &filename, const size_t N,
 
   std::vector<size_t> idxs;
   std::vector<size_t> neigh_idxs;
+  std::vector<double> dist_comp;
 
   RunningStat rs;
+  RunningStat rsx;
+  RunningStat rsy;
+  RunningStat rsz;
   traj.skipFrames(num_skipframes);
   std::string buff = "";
   int lines = 0;
@@ -1012,9 +1017,14 @@ void variance01kd_r_nbl(std::string &filename, const size_t N,
         // neighbors
         dist = pbc.minimum_image_L2_distance(&frame.points[nbs[j][k]][0]);
 
-        var_check = rs.Variance();
+        dist_comp = pbc.minimum_image_xyz_distance(&frame.points[nbs[j][k]][0]);
+
+        // var_check = rs.Variance();
 
         rs.Push(dist);
+        rsx.Push(dist_comp[0]);
+        rsy.Push(dist_comp[1]);
+        rsz.Push(dist_comp[2]);
         n++;
 
         if (dump > 0) {
@@ -1050,6 +1060,10 @@ void variance01kd_r_nbl(std::string &filename, const size_t N,
 
   nbs_found = rs.NumDataValues();
   variance01 = rs.Variance();
+  variance01_xyz.push_back(rsx.Variance());
+  variance01_xyz.push_back(rsy.Variance());
+  variance01_xyz.push_back(rsz.Variance());
+
   std::cout << n << std::endl;
 
 }

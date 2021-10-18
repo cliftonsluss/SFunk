@@ -36,3 +36,18 @@ double PBC::minimum_image_L2_distance(double *ipt){
   }
   return pow(distance, 0.5);
 }
+
+std::vector<double> PBC::minimum_image_xyz_distance(double *ipt){
+  std::vector<double> distance(3);
+  for (int i = 0;i < 3;i++){
+    if ((pt[i]-ipt[i]) < (-len[i]*0.5)){
+      distance[i] = abs(pt[i] - (ipt[i] - len[i]));
+    }
+    else if ((pt[i]-ipt[i]) > (len[i]*0.5)){
+      distance[i] = abs(pt[i] - (ipt[i] + len[i]));
+    } else {
+      distance[i] = abs(pt[i] - ipt[i]);
+    }
+  }
+  return distance;
+}
