@@ -1032,10 +1032,10 @@ void variance01kd_r_nbl(std::string &filename, const size_t N,
             if (lines < 1000) {
               std::stringstream stream1;
               stream1 << std::fixed << std::setprecision(10)
-              << rs.NumDataValues();
+              << rsx.NumDataValues();
               std::stringstream stream2;
               stream2 << std::fixed << std::setprecision(10)
-              << rs.Variance();
+              << rsx.Variance();
               buff = buff + stream1.str() + " " + stream2.str() + "\n";
               lines++;
             }
