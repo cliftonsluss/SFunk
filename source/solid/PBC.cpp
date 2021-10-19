@@ -49,6 +49,7 @@ std::vector<double> PBC::minimum_image_xyz_distance(double *ipt){
     } else {
       temp = abs(pt[i] - ipt[i]);
     }
+    std::cout << temp << std::endl;
     distance[i] = temp;
   }
   return distance;

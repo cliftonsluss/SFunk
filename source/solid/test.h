@@ -1022,7 +1022,7 @@ void variance01kd_r_nbl(std::string &filename, const size_t N,
         // var_check = rs.Variance();
 
         rs.Push(dist);
-        std::cout << dist_xyz[0] << std::endl;
+        // std::cout << dist_xyz[0] << std::endl;
         rsx.Push(dist_xyz[0]);
         rsy.Push(dist_xyz[1]);
         rsz.Push(dist_xyz[2]);
