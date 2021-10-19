@@ -42,14 +42,14 @@ std::vector<double> PBC::minimum_image_xyz_distance(double *ipt){
   double temp = 0;
   for (int i = 0;i < 3;i++){
     if ((pt[i]-ipt[i]) < (-len[i]*0.5)){
-      temp = abs(pt[i] - (ipt[i] - len[i]));
+      temp = fabs(pt[i] - (ipt[i] - len[i]));
       std::cout << "first " << temp << std::endl;
     }
     else if ((pt[i]-ipt[i]) > (len[i]*0.5)){
-      temp = abs(pt[i] - (ipt[i] + len[i]));
+      temp = fabs(pt[i] - (ipt[i] + len[i]));
       std::cout << "second " << temp << std::endl;
     } else {
-      temp = abs(pt[i] - ipt[i]);
+      temp = fabs(pt[i] - ipt[i]);
       std::cout << "none " << temp << std::endl;
     }
 
