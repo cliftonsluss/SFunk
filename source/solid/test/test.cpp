@@ -508,11 +508,27 @@ TEST_F(Var01_test, From_saved_frame) {
 }
 
 TEST_F(Var01_test, From_saved_Si) {
+  time_t start, stop;
+  start = time(NULL);
+  std::cout << start << std::endl;
+  NeighborListGenerator NLG_Si = NeighborListGenerator(frame_Si,
+                              num_atoms_Si,
+                              num_nbs_Si,
+                              skin_Si);
+  stop = time(NULL);
+  std::cout << stop << std::endl;
+  std::cout << "Neighbor List generated in "
+            << (stop - start) << std::endl;
+  nbl_Si = NLG_Si.GetListOG();
+  start = time(NULL);
   variance01kd_r_nbl<double>(datafile_Si,
     num_atoms_Si, num_frames_Si,
     num_skipframes, num_nbs_Si,
     nbs_found_Si, variance01_Si, variance01_xyz_Si, outfile,
     skin_Si, nbl_Si, dump);
+  stop = time(NULL);
+  std::cout << "Statistics Calulated in "
+            << (stop - start) << std::endl;
   std::cout << "variance01= " << variance01_Si << std::endl;
   std::cout << "var01_x= " << variance01_xyz_Si[0] << std::endl;
   std::cout << "var01_y= " << variance01_xyz_Si[1] << std::endl;
