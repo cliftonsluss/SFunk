@@ -449,8 +449,8 @@ class RunningStat
 template <typename T>
 void variance00WK(std::string &filename, int num_atoms, int num_frames,
     int num_skipframes, resultSet<T> &result) {
-  double xa, ya, za, xb, yb, zb, xlen, ylen, zlen, old_avgx, old_avgy,
-    old_avgz, avgx, avgy, avgz, diff_sqrd, nsamples, variance;
+  double xa, ya, za, xb, yb, zb, rb, xlen, ylen, zlen, old_avgx, old_avgy,
+    old_avgz, varx, vary, varz, diff_sqrd, nsamples, variance;
   simFrame<double> frame0;
   simFrame<double> frame;
   Trajectory traj(filename, num_atoms, 5);
@@ -483,9 +483,19 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
     result.avg.points[j][2] = frame0.points[j][2];
   }
   diff_sqrd = 0;
+  varx = 0;
+  vary = 0;
+  varz = 0;
+
   double div_3 = 1.0/3.0;
 
-  RunningStat rs;
+  // RunningStat rsr;
+  // RunningStat rsx;
+  // RunningStat rsy;
+  // RunningStat rsz;
+
+  // std::vector<std::vector<double>
+
   for (int i = 1; i < num_frames; i++) {
     traj.getNextFrame(frame);
 
@@ -516,18 +526,24 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
 	      zb = zb + zlen;
       }
 
+
+
       old_avgx = result.avg.points[j][0];
       old_avgy = result.avg.points[j][1];
       old_avgz = result.avg.points[j][2];
-      result.avg.points[j][0] = old_avgx + (xb - result.avg.points[j][0])/i;
-      result.avg.points[j][1] = old_avgy + (yb - result.avg.points[j][1])/i;
-      result.avg.points[j][2] = old_avgz + (zb - result.avg.points[j][2])/i;
-      avgx = (xb - old_avgx)*(xb - result.avg.points[j][0]);
-      avgy = (yb - old_avgy)*(yb - result.avg.points[j][1]);
-      avgz = (zb - old_avgz)*(zb - result.avg.points[j][2]);
+      // xdiff = xb -
+      result.avg.points[j][0] = old_avgx + (xb - old_avgx)/i;
+      result.avg.points[j][1] = old_avgy + (yb - old_avgy)/i;
+      result.avg.points[j][2] = old_avgz + (zb - old_avgz)/i;
+
+      varx = varx + (xb - old_avgx)*(xb - result.avg.points[j][0]);
+      vary = vary + (yb - old_avgy)*(yb - result.avg.points[j][1]);
+      varz = varz + (zb - old_avgz)*(zb - result.avg.points[j][2]);
+
       diff_sqrd = diff_sqrd + ((xb - old_avgx)*(xb - result.avg.points[j][0])
 	        + (yb - old_avgy)*(yb - result.avg.points[j][1])
           + (zb - old_avgz)*(zb - result.avg.points[j][2]));
+
     }
   }
 
@@ -579,12 +595,14 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
   //   result.avg.pts[i].z = (result.avg.pts[i].z - result.avg.zbox.min)*zfac;
   // }
 
-  diff_sqrd = diff_sqrd/num_atoms;
-  nsamples = num_frames*3.0;
-  result.variance = diff_sqrd/(nsamples-1);
-  result.var_xyz.push_back(avgx/(num_frames-1));
-  result.var_xyz.push_back(avgy/(num_frames-1));
-  result.var_xyz.push_back(avgz/(num_frames-1));
+  // diff_sqrd = diff_sqrd/num_atoms;
+  // nsamples = num_frames*3.0;
+  nsamples = num_frames*num_atoms;
+  result.variance = diff_sqrd/((nsamples*3)-1);
+  // result.variance = rsr.Variance();
+  result.var_xyz.push_back(varx/(nsamples-1));
+  result.var_xyz.push_back(vary/(nsamples-1));
+  result.var_xyz.push_back(varz/(nsamples-1));
 
   // std::string outfile = "test.traj";
   // std::ofstream test_out{outfile};
