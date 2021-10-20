@@ -100,6 +100,7 @@ struct resultSet
 {
   simFrame<T> avg;
   T variance;
+  std::vector<T> var_xyz;
 };
 
 // template <typename T>

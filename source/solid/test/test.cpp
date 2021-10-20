@@ -549,7 +549,7 @@ TEST_F(variance01Test, CorrectValues_bcc) {
   std::cout << "variance01kd_r block\n";
   variance01kd_r<double>(datafile_bcc, results_bcc.avg, num_atoms_bcc,
     num_frames, num_skipframes, num_nbs_bcc, nbs_found_bcc, variance01_bcc,
-    outfile_bcc, skin, dump);
+    variance_xyz, outfile_bcc, skin, dump);
   // ASSERT_EQ(nbs_found_bcc, neighbors_bcc);
   // std::cout << "neighbors found bcc= " << nbs_found_bcc << std::endl;
   // std::cout << "neighbors expected bcc= " << neighbors_bcc << std::endl;
@@ -562,7 +562,7 @@ TEST_F(variance01Test, CorrectValues_fcc) {
   neighbors_fcc = num_atoms_fcc * num_frames * num_nbs_fcc/2;
   variance01kd_r<double>(datafile_fcc, results_fcc.avg, num_atoms_fcc,
     num_frames, num_skipframes, num_nbs_fcc, nbs_found_fcc, variance01_fcc,
-    outfile_fcc, skin, dump);
+    variance_xyz, outfile_fcc, skin, dump);
   ASSERT_EQ(nbs_found_fcc, neighbors_fcc);
   std::cout << "neighbors found fcc= " << nbs_found_fcc << std::endl;
   std::cout << "neighbors expected fcc= " << neighbors_fcc << std::endl;
@@ -575,7 +575,7 @@ TEST_F(variance01Test, CorrectValues_Fe) {
   neighbors_Fe = num_atoms_Fe * num_frames_Fe * num_nbs_bcc/2;
   variance01kd_r<double>(datafile_Fe, results_Fe.avg, num_atoms_Fe,
     num_frames_Fe, num_skipframes, num_nbs_bcc, nbs_found_Fe, variance01_Fe,
-    outfile_Fe, skin_Fe, dump);
+    variance_xyz, outfile_Fe, skin_Fe, dump);
   // ASSERT_EQ(nbs_found_Fe, neighbors_Fe);
   std::cout << "neighbors found Fe= " << nbs_found_Fe << std::endl;
   std::cout << "neighbors expected Fe= " << neighbors_Fe << std::endl;
@@ -583,7 +583,50 @@ TEST_F(variance01Test, CorrectValues_Fe) {
   ASSERT_EQ(0, 0);
 }
 
+TEST_F(variance01Test, CorrectValues_Si) {
+  variance00WK<double>(datafile_Si, num_atoms_Si, num_frames_Si, num_skipframes,
+    results_Si);
+  std::cout << "var00 " << results_Si.variance << std::endl;
+  std::cout << "varx00 " << results_Si.var_xyz[0] << std::endl;
+  std::cout << "vary00 " << results_Si.var_xyz[1] << std::endl;
+  std::cout << "varz00 " << results_Si.var_xyz[2] << std::endl;
+  // neighbors_Fe = num_atoms_Fe * num_frames_Fe * num_nbs_bcc/2;
+  variance01kd_r<double>(datafile_Si, results_Si.avg, num_atoms_Si,
+    num_frames_Si, num_skipframes, num_nbs_Si, nbs_found_Si, variance01_Si,
+    variance_xyz, outfile_Si, skin_Si, dump);
+  // ASSERT_EQ(nbs_found_Fe, neighbors_Fe);
 
+  std::cout << "var01 " << variance01_Si << std::endl;
+  std::cout << "varx01 " << variance_xyz[0] << std::endl;
+  std::cout << "vary01 " << variance_xyz[1] << std::endl;
+  std::cout << "varz01 " << variance_xyz[2] << std::endl;
+  ASSERT_EQ(0, 0);
+}
+
+TEST_F(variance01Test, Compare_Si) {
+  variance00WK<double>(datafile_Si, num_atoms_Si, num_frames_Si, num_skipframes,
+    results_Si);
+    std::cout << "var00 " << results_Si.variance << std::endl;
+    std::cout << "varx00 " << results_Si.var_xyz[0] << std::endl;
+    std::cout << "vary00 " << results_Si.var_xyz[1] << std::endl;
+    std::cout << "varz00 " << results_Si.var_xyz[2] << std::endl;
+  // neighbors_Fe = num_atoms_Fe * num_frames_Fe * num_nbs_bcc/2;
+  NeighborListGenerator NLG_Si = NeighborListGenerator(results_Si.avg,
+                              num_atoms_Si,
+                              num_nbs_Si,
+                              skin_Si);
+  nbl_Si = NLG_Si.GetListOG();
+  variance01kd_r_nbl<double>(datafile_Si, num_atoms_Si,
+    num_frames_Si, num_skipframes, num_nbs_Si, nbs_found_Si, variance01_Si,
+    variance_xyz, outfile_Si, skin_Si, nbl_Si, dump);
+  // ASSERT_EQ(nbs_found_Fe, neighbors_Fe);
+
+  std::cout << "var01 " << variance01_Si << std::endl;
+  std::cout << "varx01 " << variance_xyz[0] << std::endl;
+  std::cout << "vary01 " << variance_xyz[1] << std::endl;
+  std::cout << "varz01 " << variance_xyz[2] << std::endl;
+  ASSERT_EQ(0, 0);
+}
 
 // test running stat output via variance01kd_r
 // TEST_F(variance01Test, CorrectVarianceVectorLength) {

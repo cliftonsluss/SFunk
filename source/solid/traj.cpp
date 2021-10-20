@@ -75,10 +75,19 @@ if (!var01_only) {
     num_frames, num_skipframes, results);
   // values below not needed anymore but still being reported for reference
   std::cout << std::fixed << std::setprecision(10);
-  std::cout << "variance00= " << results.variance << std::endl;
+  // std::cout << "variance00= " << results.variance << std::endl;
+  // std::cout << "std00= " << pow(results.variance,0.5) << std::endl;
+
+  std::cout << "var00= " << results.variance << std::endl;
+  std::cout << "varx00= " << results.var_xyz[0] << std::endl;
+  std::cout << "vary00= " << results.var_xyz[1] << std::endl;
+  std::cout << "varz00= " << results.var_xyz[2] << std::endl;
   std::cout << "std00= " << pow(results.variance,0.5) << std::endl;
+
+
   frame1 = results.avg;
   std::cout << "completed var00 calculation" << std::endl;
+
   if (avgdump) {
     std::cout << "writing average frame to " << avgoutfile << std::endl;
     Trajectory dump(avgoutfile);
@@ -217,9 +226,13 @@ if (nbList) {
 // } else {
 std::cout << "calculating var01 from var00 output" << std::endl;
 variance01kd_r<double>(datafile, frame1, num_atoms, num_frames,
-  num_skipframes, num_nbs, nbs_found, variance01, outfile, skin, dump);
+  num_skipframes, num_nbs, nbs_found, variance01, variance01_xyz,
+  outfile, skin, dump);
 // std::cout << "neighbor count= " << nbs_found << std::endl;
 std::cout << "variance01= " << variance01 << std::endl;
+std::cout << "var01_x= " << variance01_xyz[0] << std::endl;
+std::cout << "var01_y= " << variance01_xyz[1] << std::endl;
+std::cout << "var01_z= " << variance01_xyz[2] << std::endl;
 std::cout << "std01= " << pow(variance01,0.5) << std::endl;
 // }
 

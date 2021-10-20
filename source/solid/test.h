@@ -450,7 +450,7 @@ template <typename T>
 void variance00WK(std::string &filename, int num_atoms, int num_frames,
     int num_skipframes, resultSet<T> &result) {
   double xa, ya, za, xb, yb, zb, xlen, ylen, zlen, old_avgx, old_avgy,
-    old_avgz, diff_sqrd, nsamples, variance;
+    old_avgz, avgx, avgy, avgz, diff_sqrd, nsamples, variance;
   simFrame<double> frame0;
   simFrame<double> frame;
   Trajectory traj(filename, num_atoms, 5);
@@ -522,6 +522,9 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
       result.avg.points[j][0] = old_avgx + (xb - result.avg.points[j][0])/i;
       result.avg.points[j][1] = old_avgy + (yb - result.avg.points[j][1])/i;
       result.avg.points[j][2] = old_avgz + (zb - result.avg.points[j][2])/i;
+      avgx = (xb - old_avgx)*(xb - result.avg.points[j][0]);
+      avgy = (yb - old_avgy)*(yb - result.avg.points[j][1]);
+      avgz = (zb - old_avgz)*(zb - result.avg.points[j][2]);
       diff_sqrd = diff_sqrd + ((xb - old_avgx)*(xb - result.avg.points[j][0])
 	        + (yb - old_avgy)*(yb - result.avg.points[j][1])
           + (zb - old_avgz)*(zb - result.avg.points[j][2]));
@@ -579,6 +582,9 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
   diff_sqrd = diff_sqrd/num_atoms;
   nsamples = num_frames*3.0;
   result.variance = diff_sqrd/(nsamples-1);
+  result.var_xyz.push_back(avgx/(num_frames-1));
+  result.var_xyz.push_back(avgy/(num_frames-1));
+  result.var_xyz.push_back(avgz/(num_frames-1));
 
   // std::string outfile = "test.traj";
   // std::ofstream test_out{outfile};
@@ -873,8 +879,8 @@ void variance01kd(std::string &filename, simFrame<T> &avg_frame, const size_t N,
 template <typename T>
 void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t N,
     const int num_frames, const int num_skipframes, const int num_nbs,
-    size_t &nbs_found, double &variance01, std::string &outfile, double skin,
-    int dump=0, float eps=0.0001) {
+    size_t &nbs_found, double &variance01, std::vector<double> &variance01_xyz,
+    std::string &outfile, double skin, int dump=0, float eps=0.0001) {
   // std::cout << dump << "\n";
   // PointCloud<T> cloud;
   if (!outfile.empty()) {
@@ -896,6 +902,7 @@ void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t 
 
   std::vector<size_t> idxs;
   std::vector<size_t> neigh_idxs;
+  std::vector<double> dist_xyz;
 
   NeighborListGenerator NL;
   NL = NeighborListGenerator(avg_frame, N, num_nbs, skin);
@@ -903,7 +910,12 @@ void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t 
   // std::vector<std::vector<size_t>> nbs = nlist.nbs_og;
   // neigh_idxs = nlist.nbs;
   // size_t nbs = nlist.nnbs;
+
   RunningStat rs;
+  RunningStat rsx;
+  RunningStat rsy;
+  RunningStat rsz;
+
   traj.skipFrames(num_skipframes);
   std::string buff = "";
   int lines = 0;
@@ -923,10 +935,14 @@ void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t 
         // grab our reference point x,y,z coordinates and coordinates of it's
         // neighbors
         dist = pbc.minimum_image_L2_distance(&frame.points[nbs[j][k]][0]);
+        dist_xyz = pbc.minimum_image_xyz_distance(&frame.points[nbs[j][k]][0]);
 
-        var_check = rs.Variance();
+        // var_check = rs.Variance();
 
         rs.Push(dist);
+        rsx.Push(dist_xyz[0]);
+        rsy.Push(dist_xyz[1]);
+        rsz.Push(dist_xyz[2]);
         n++;
 
         if (dump > 0) {
@@ -962,6 +978,10 @@ void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t 
 
   nbs_found = rs.NumDataValues();
   variance01 = rs.Variance();
+  variance01_xyz.push_back(rsx.Variance());
+  variance01_xyz.push_back(rsy.Variance());
+  variance01_xyz.push_back(rsz.Variance());
+
 
 
 }
