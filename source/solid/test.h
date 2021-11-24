@@ -905,7 +905,7 @@ void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t 
     std::ofstream var_out {outfile};
     var_out << "npairs\t   variance\n";
   }
-
+  double rootThree = pow(3,0.5);
   // double skin = 6.0;
   size_t header = 5;
   size_t n = 0;
@@ -957,7 +957,7 @@ void variance01kd_r(std::string &filename, simFrame<T> &avg_frame, const size_t 
 
         // var_check = rs.Variance();
 
-        rs.Push(dist);
+        rs.Push(dist/rootThree);
         rsx.Push(dist_xyz[0]);
         rsy.Push(dist_xyz[1]);
         rsz.Push(dist_xyz[2]);
@@ -1015,7 +1015,7 @@ void variance01kd_r_nbl(std::string &filename, const size_t N,
     std::ofstream var_out {outfile};
     var_out << "npairs\t   variance\n";
   }
-
+  double rootThree = pow(3,0.5);
   size_t header = 5;
   size_t n = 0;
   double xlen, ylen, zlen, xa, ya, za, xb, yb, zb, xdist_2, ydist_2, zdist_2,
@@ -1059,7 +1059,7 @@ void variance01kd_r_nbl(std::string &filename, const size_t N,
 
         // var_check = rs.Variance();
 
-        rs.Push(dist);
+        rs.Push(dist/rootThree);
         rsx.Push(dist_xyz[0]);
         rsy.Push(dist_xyz[1]);
         rsz.Push(dist_xyz[2]);

@@ -494,6 +494,102 @@ TEST(PBC_test, minimum_image){
   ASSERT_EQ(pts1,pts);
 }
 
+TEST_F(PBC_XYZ_Distance, Cu) {
+  variance00WK<double>(datafile_Cu, num_atoms_Cu, num_frames_Cu,
+    num_skipframes_Cu, results_Cu);
+
+  double rootThree = pow(3,0.5);
+  NL = NeighborListGenerator(results_Cu.avg,
+                             num_atoms_Cu,
+                             num_nbs_Cu,
+                             skin_Cu);
+  std::vector<std::vector<size_t>> nbs = NL.GetListOG();
+  Trajectory traj(datafile_Cu, num_atoms_Cu, 5);
+  simFrame<double> frame;
+  for (size_t i = 0; i < num_frames_Cu; i++) {
+    traj.getNextFrame(frame);
+    // std::cout << "frame number = " << i << std::endl;
+    xlen = frame.box.xlen;
+    ylen = frame.box.ylen;
+    zlen = frame.box.ylen;
+    std::vector<double> len = {xlen,ylen,zlen};
+    // std::cout << "nbs = " << nbs << std::endl;
+    for (size_t j = 0; j < num_atoms_Cu; j++) {
+      PBC pbc(&frame.points[j][0],len);
+      for (size_t k = 0; k < num_nbs_Cu; k++) {
+        // grab our reference point x,y,z coordinates and coordinates of it's
+        // neighbors
+        dist = pbc.minimum_image_L2_distance(&frame.points[nbs[j][k]][0]);
+        dist_xyz = pbc.minimum_image_xyz_distance(&frame.points[nbs[j][k]][0]);
+
+
+        std::cout << j+1 << ", " << nbs[j][k] + 1 << ", " << dist << ", "
+        << dist_xyz[0] << ", " << dist_xyz[1] << ", " << dist_xyz[2]
+        << std::endl;
+        rs.Push(dist/rootThree);
+        rsx.Push(dist_xyz[0]);
+        rsy.Push(dist_xyz[1]);
+        rsz.Push(dist_xyz[2]);
+      }
+    }
+  }
+  std::cout << " , Var00, " << results_Cu.variance << ", "
+  << results_Cu.var_xyz[0] << ", " << results_Cu.var_xyz[1]
+  << ", " << results_Cu.var_xyz[2] << std::endl;
+  std::cout << "\n \n";
+  std::cout << " , " << "variances, " << rs.Variance() << ", "
+  << rsx.Variance() << ", " << rsy.Variance() << ", "
+  << rsz.Variance() << std::endl;
+
+}
+
+TEST_F(PBC_XYZ_Distance, Si) {
+  variance00WK<double>(datafile_Si, num_atoms_Si, num_frames_Si,
+    num_skipframes_Si, results_Si);
+  std::cout << " , Var00, " << results_Si.variance << ", "
+  << results_Si.var_xyz[0] << ", " << results_Si.var_xyz[1]
+  << ", " << results_Si.var_xyz[2] << std::endl;
+
+  NL = NeighborListGenerator(results_Si.avg,
+                             num_atoms_Si,
+                             num_nbs_Si,
+                             skin_Si);
+  std::vector<std::vector<size_t>> nbs = NL.GetListOG();
+  Trajectory traj(datafile_Si, num_atoms_Si, 5);
+  simFrame<double> frame;
+  for (size_t i = 0; i < num_frames_Si; i++) {
+    traj.getNextFrame(frame);
+    // std::cout << "frame number = " << i << std::endl;
+    xlen = frame.box.xlen;
+    ylen = frame.box.ylen;
+    zlen = frame.box.ylen;
+    std::vector<double> len = {xlen,ylen,zlen};
+    // std::cout << "nbs = " << nbs << std::endl;
+    for (size_t j = 0; j < num_atoms_Si; j++) {
+      PBC pbc(&frame.points[j][0],len);
+      for (size_t k = 0; k < num_nbs_Si; k++) {
+        // grab our reference point x,y,z coordinates and coordinates of it's
+        // neighbors
+        dist = pbc.minimum_image_L2_distance(&frame.points[nbs[j][k]][0]);
+        dist_xyz = pbc.minimum_image_xyz_distance(&frame.points[nbs[j][k]][0]);
+        std::cout << j+1 << ", " << nbs[j][k] + 1 << ", " << dist << ", "
+        << dist_xyz[0] << ", " << dist_xyz[1] << ", " << dist_xyz[2]
+        << std::endl;
+        rs.Push(dist);
+        rsx.Push(dist_xyz[0]);
+        rsy.Push(dist_xyz[1]);
+        rsz.Push(dist_xyz[2]);
+      }
+    }
+  }
+  std::cout << "\n \n";
+  std::cout << " , " << "variances, " << rs.Variance() << ", "
+  << rsx.Variance() << ", " << rsy.Variance() << ", "
+  << rsz.Variance() << std::endl;
+
+}
+
+
 TEST_F(Var01_test, From_saved_frame) {
   variance01kd_r_nbl<double>(datafile,
     num_atoms, num_frames,
@@ -569,17 +665,37 @@ TEST_F(variance01Test, CorrectValues_fcc) {
   ASSERT_NEAR(results_fcc.variance, variance01_fcc/2.0, 1.0e-07);
 }
 
+// TEST_F(variance01Test, CorrectValues_Fe) {
+//   variance00WK<double>(datafile_Fe, num_atoms_Fe, num_frames_Fe, num_skipframes,
+//     results_Fe);
+//   neighbors_Fe = num_atoms_Fe * num_frames_Fe * num_nbs_bcc/2;
+//   variance01kd_r<double>(datafile_Fe, results_Fe.avg, num_atoms_Fe,
+//     num_frames_Fe, num_skipframes, num_nbs_bcc, nbs_found_Fe, variance01_Fe,
+//     variance_xyz, outfile_Fe, skin_Fe, dump);
+//   // ASSERT_EQ(nbs_found_Fe, neighbors_Fe);
+//   std::cout << "neighbors found Fe= " << nbs_found_Fe << std::endl;
+//   std::cout << "neighbors expected Fe= " << neighbors_Fe << std::endl;
+//   std::cout << "var01 " << variance01_Fe << std::endl;
+//   ASSERT_EQ(0, 0);
+// }
+
 TEST_F(variance01Test, CorrectValues_Fe) {
   variance00WK<double>(datafile_Fe, num_atoms_Fe, num_frames_Fe, num_skipframes,
     results_Fe);
-  neighbors_Fe = num_atoms_Fe * num_frames_Fe * num_nbs_bcc/2;
+  std::cout << "var00 " << results_Fe.variance << std::endl;
+  std::cout << "varx00 " << results_Fe.var_xyz[0] << std::endl;
+  std::cout << "vary00 " << results_Fe.var_xyz[1] << std::endl;
+  std::cout << "varz00 " << results_Fe.var_xyz[2] << std::endl;
+  // neighbors_Fe = num_atoms_Fe * num_frames_Fe * num_nbs_bcc/2;
   variance01kd_r<double>(datafile_Fe, results_Fe.avg, num_atoms_Fe,
-    num_frames_Fe, num_skipframes, num_nbs_bcc, nbs_found_Fe, variance01_Fe,
+    num_frames_Fe, num_skipframes, num_nbs_Fe, nbs_found_Fe, variance01_Fe,
     variance_xyz, outfile_Fe, skin_Fe, dump);
   // ASSERT_EQ(nbs_found_Fe, neighbors_Fe);
-  std::cout << "neighbors found Fe= " << nbs_found_Fe << std::endl;
-  std::cout << "neighbors expected Fe= " << neighbors_Fe << std::endl;
+
   std::cout << "var01 " << variance01_Fe << std::endl;
+  std::cout << "varx01 " << variance_xyz[0] << std::endl;
+  std::cout << "vary01 " << variance_xyz[1] << std::endl;
+  std::cout << "varz01 " << variance_xyz[2] << std::endl;
   ASSERT_EQ(0, 0);
 }
 
@@ -597,6 +713,55 @@ TEST_F(variance01Test, CorrectValues_Si) {
   // ASSERT_EQ(nbs_found_Fe, neighbors_Fe);
 
   std::cout << "var01 " << variance01_Si << std::endl;
+  std::cout << "varx01 " << variance_xyz[0] << std::endl;
+  std::cout << "vary01 " << variance_xyz[1] << std::endl;
+  std::cout << "varz01 " << variance_xyz[2] << std::endl;
+  ASSERT_EQ(0, 0);
+}
+
+TEST_F(variance01Test, CorrectValues_Cu) {
+  variance00WK<double>(datafile_Cu, num_atoms_Cu, num_frames_Cu, num_skipframes,
+    results_Cu);
+  std::cout << "var00 " << results_Cu.variance << std::endl;
+  std::cout << "varx00 " << results_Cu.var_xyz[0] << std::endl;
+  std::cout << "vary00 " << results_Cu.var_xyz[1] << std::endl;
+  std::cout << "varz00 " << results_Cu.var_xyz[2] << std::endl;
+  // neighbors_Fe = num_atoms_Fe * num_frames_Fe * num_nbs_bcc/2;
+  variance01kd_r<double>(datafile_Cu, results_Cu.avg, num_atoms_Cu,
+    num_frames_Cu, num_skipframes, num_nbs_Cu, nbs_found_Cu, variance01_Cu,
+    variance_xyz, outfile_Cu, skin_Cu, dump);
+  // ASSERT_EQ(nbs_found_Fe, neighbors_Fe);
+
+  std::cout << "var01 " << variance01_Cu << std::endl;
+  std::cout << "varx01 " << variance_xyz[0] << std::endl;
+  std::cout << "vary01 " << variance_xyz[1] << std::endl;
+  std::cout << "varz01 " << variance_xyz[2] << std::endl;
+  ASSERT_EQ(0, 0);
+}
+
+TEST_F(variance01Test, Correct_Cu) {
+  std::cout << "Using config file: " << configfile_Cu << std::endl;
+  std::cout << "Calculating from trajectory file: " << datafile_Cu << std::endl;
+  variance00WK<double>(datafile_Cu, num_atoms_Cu, num_frames_Cu, num_skipframes,
+    results_Cu);
+  std::cout << "var00 " << results_Cu.variance << std::endl;
+  std::cout << "varx00 " << results_Cu.var_xyz[0] << std::endl;
+  std::cout << "vary00 " << results_Cu.var_xyz[1] << std::endl;
+  std::cout << "varz00 " << results_Cu.var_xyz[2] << std::endl;
+  // neighbors_Fe = num_atoms_Fe * num_frames_Fe * num_nbs_bcc/2;
+  std::cout << "generating neighbor list" << std::endl;
+  NeighborListGenerator NLG_Cu = NeighborListGenerator(results_Cu.avg,
+                              num_atoms_Cu,
+                              num_nbs_Cu,
+                              skin_Cu);
+  nbl_Cu = NLG_Cu.GetListOG();
+  std::cout << "calculating 01 variance from neighbor list" << std::endl;
+  variance01kd_r_nbl<double>(datafile_Cu, num_atoms_Cu,
+    num_frames_Cu, num_skipframes, num_nbs_Cu, nbs_found_Cu, variance01_Cu,
+    variance_xyz, outfile_Cu, skin_Cu, nbl_Cu, dump);
+  // ASSERT_EQ(nbs_found_Fe, neighbors_Fe);
+
+  std::cout << "var01 " << variance01_Cu << std::endl;
   std::cout << "varx01 " << variance_xyz[0] << std::endl;
   std::cout << "vary01 " << variance_xyz[1] << std::endl;
   std::cout << "varz01 " << variance_xyz[2] << std::endl;
