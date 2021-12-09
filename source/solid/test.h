@@ -451,7 +451,7 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
     int num_skipframes, resultSet<T> &result) {
   double xa, ya, za, xb, yb, zb, rb, xlen, ylen, zlen, old_avgx, old_avgy,
     old_avgz, varx, vary, varz, diff_sqrd, nsamples, variance, old_avgr,
-    new_rb, varrb, old_rb;
+    new_avgr, varrb, old_rb;
   double invRootThree = 1/pow(3,0.5);
   simFrame<double> frame0;
   simFrame<double> frame;
@@ -503,6 +503,10 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
 
     int k = 0;
     for (int j = 0; j < num_atoms; j++) {
+      // we want to make sure that if an atom moves through a periodic
+      // boundary that we apply the minium image criterium and 'lock'
+      // the atom to the side of the boundary it was on in the first
+      // frame before we sample its position.
       xa = frame0.points[j][0];
       xb = frame.points[j][0];
       ya = frame0.points[j][1];
@@ -528,8 +532,17 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
 	      zb = zb + zlen;
       }
 
+      rb = pow(xb*xb + yb*yb + zb*zb, 0.5)*invRootThree;
 
 
+      // welford code for reference
+      // m_newM = m_oldM + (x - m_oldM)/m_n;
+      // m_newS = m_oldS + (x - m_oldM)*(x - m_newM);
+      // // set up for next iteration
+      // m_oldM = m_newM;
+      // m_oldS = m_newS;
+
+      // store old values
       old_avgx = result.avg.points[j][0];
       old_avgy = result.avg.points[j][1];
       old_avgz = result.avg.points[j][2];
@@ -537,25 +550,29 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
 
       old_avgr = pow(old_avgx*old_avgx + old_avgy*old_avgy
       + old_avgz*old_avgz, 0.5)*invRootThree;
-      rb = pow(xb*xb + yb*yb + zb*zb, 0.5)*invRootThree;
 
-      new_rb = old_avgr + (rb - old_avgr)/i;
 
+
+
+      // calculate running average
       result.avg.points[j][0] = old_avgx + (xb - old_avgx)/i;
       result.avg.points[j][1] = old_avgy + (yb - old_avgy)/i;
       result.avg.points[j][2] = old_avgz + (zb - old_avgz)/i;
 
-      // varx = varx + (xb - old_avgx)*(xb - result.avg.points[j][0]);
-      // vary = vary + (yb - old_avgy)*(yb - result.avg.points[j][1]);
-      // varz = varz + (zb - old_avgz)*(zb - result.avg.points[j][2]);
+      new_avgr = old_avgr + (rb - old_avgr)/i;
 
-      varrb = varrb + (rb - old_rb)*(rb - new_rb);
+      //calculate running variance
+      varx = varx + (xb - old_avgx)*(xb - result.avg.points[j][0]);
+      vary = vary + (yb - old_avgy)*(yb - result.avg.points[j][1]);
+      varz = varz + (zb - old_avgz)*(zb - result.avg.points[j][2]);
+
+      varrb = varrb + (rb - old_avgr)*(rb - new_avgr);
 
       // diff_sqrd = diff_sqrd + ((xb - old_avgx)*(xb - result.avg.points[j][0])
 	    //     + (yb - old_avgy)*(yb - result.avg.points[j][1])
       //     + (zb - old_avgz)*(zb - result.avg.points[j][2]));
 
-      diff_sqrd = diff_sqrd + ((rb - old_avgr)*(rb - new_rb));
+      diff_sqrd = diff_sqrd + ((rb - old_avgr)*(rb - new_avgr));
 
 
     }
@@ -613,7 +630,8 @@ void variance00WK(std::string &filename, int num_atoms, int num_frames,
   // nsamples = num_frames*3.0;
   nsamples = num_frames*num_atoms;
   // result.variance = diff_sqrd/((nsamples*3)-1);
-  result.variance = diff_sqrd/(nsamples-1);
+  // result.variance = diff_sqrd/(nsamples-1);
+  result.variance = varrb/(nsamples-1);
   // result.variance = rsr.Variance();
   result.var_xyz.push_back(varx/(nsamples-1));
   result.var_xyz.push_back(vary/(nsamples-1));

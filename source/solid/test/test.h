@@ -217,6 +217,18 @@ protected:
     dump_Si = config_Si.j["dump"];
     outfile_Si = config_Si.j["outfile"];
 
+    configfile_Fe = "./PBC_XYZ_Fe.json";
+    Read_config config_Fe(configfile_Fe);
+    config_Fe.get_config();
+    num_nbs_Fe = config_Fe.j["neighbors"];
+    num_atoms_Fe = config_Fe.j["atoms"];
+    num_frames_Fe = config_Fe.j["frames"];
+    num_skipframes_Fe = config_Fe.j["skipframes"];
+    datafile_Fe = config_Fe.j["datafile"];
+    skin_Fe = config_Fe.j["skin"];
+    dump_Fe = config_Fe.j["dump"];
+    outfile_Fe = config_Fe.j["outfile"];
+
     // variance01kd_r<double>(datafile, results.avg, num_atoms, num_frames,
     //   num_skipframes, num_nbs, nbs_found, variance01, outfile, dump);
   }
@@ -250,6 +262,21 @@ std::string outfile_Si;
 double skin_Si;
 int dump_Si;
 std::vector<std::vector<size_t>> nbl_Si;
+
+int num_nbs_Fe;
+int num_atoms_Fe;
+int num_frames_Fe;
+int num_skipframes_Fe;
+std::string datafile_Fe;
+std::string configfile_Fe;
+resultSet<double> results_Fe;
+size_t nbs_found_Fe;
+double variance01_Fe;
+size_t neighbors_Fe;
+std::string outfile_Fe;
+double skin_Fe;
+int dump_Fe;
+std::vector<std::vector<size_t>> nbl_Fe;
 
 std::vector<double> variance_xyz;
 NeighborListGenerator NL;

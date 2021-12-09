@@ -543,6 +543,55 @@ TEST_F(PBC_XYZ_Distance, Cu) {
 
 }
 
+TEST_F(PBC_XYZ_Distance, Fe) {
+  variance00WK<double>(datafile_Fe, num_atoms_Fe, num_frames_Fe,
+    num_skipframes_Fe, results_Fe);
+
+  double rootThree = pow(3,0.5);
+  NL = NeighborListGenerator(results_Fe.avg,
+                             num_atoms_Fe,
+                             num_nbs_Fe,
+                             skin_Fe);
+  std::vector<std::vector<size_t>> nbs = NL.GetListOG();
+  Trajectory traj(datafile_Fe, num_atoms_Fe, 5);
+  simFrame<double> frame;
+  for (size_t i = 0; i < num_frames_Fe; i++) {
+    traj.getNextFrame(frame);
+    // std::cout << "frame number = " << i << std::endl;
+    xlen = frame.box.xlen;
+    ylen = frame.box.ylen;
+    zlen = frame.box.ylen;
+    std::vector<double> len = {xlen,ylen,zlen};
+    // std::cout << "nbs = " << nbs << std::endl;
+    for (size_t j = 0; j < num_atoms_Fe; j++) {
+      PBC pbc(&frame.points[j][0],len);
+      for (size_t k = 0; k < num_nbs_Fe; k++) {
+        // grab our reference point x,y,z coordinates and coordinates of it's
+        // neighbors
+        dist = pbc.minimum_image_L2_distance(&frame.points[nbs[j][k]][0]);
+        dist_xyz = pbc.minimum_image_xyz_distance(&frame.points[nbs[j][k]][0]);
+
+
+        std::cout << j+1 << ", " << nbs[j][k] + 1 << ", " << dist << ", "
+        << dist_xyz[0] << ", " << dist_xyz[1] << ", " << dist_xyz[2]
+        << std::endl;
+        rs.Push(dist/rootThree);
+        rsx.Push(dist_xyz[0]);
+        rsy.Push(dist_xyz[1]);
+        rsz.Push(dist_xyz[2]);
+      }
+    }
+  }
+  std::cout << " , Var00, " << results_Fe.variance << ", "
+  << results_Fe.var_xyz[0] << ", " << results_Fe.var_xyz[1]
+  << ", " << results_Fe.var_xyz[2] << std::endl;
+  std::cout << "\n \n";
+  std::cout << " , " << "variances, " << rs.Variance() << ", "
+  << rsx.Variance() << ", " << rsy.Variance() << ", "
+  << rsz.Variance() << std::endl;
+
+}
+
 TEST_F(PBC_XYZ_Distance, Si) {
   variance00WK<double>(datafile_Si, num_atoms_Si, num_frames_Si,
     num_skipframes_Si, results_Si);
