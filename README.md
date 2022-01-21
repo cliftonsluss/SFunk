@@ -13,6 +13,30 @@ make
 ## Usage
 A json configuration file is used to configure the software for your system
 ```
+{
+	"neighbors": 8,   // number of first nearest neighbors 
+	"atoms": 93312,   // number of atoms per frame
+	"frames": 10000,  // number of frames in the trajectory file 
+	"skipframes": 0,  // number of frames to skip at the beginning of the trajectory
+	"skin": 6.0,      // size in angrstroms of the padding to apply around the simulation cell to mimic periodic boundary conditions 
+	"datafile": "Fe_dummy_long_2.trj", // path to the trajectory file to be read
+	"outfile": "test.out",  // output file that will contain a record of the running covariance statistics (used to test for convergence of the Welford method)
+	"dump": 10000,    // how many data points to skip when dumping running statistics into "outfile"
+	"avgdump": false, // flag to set whether or not to write the average frame to a file (useful if your job runs out of time on an HPC resource)
+	"avgoutfile": "avgout.trj", // file to write the "avgdump" to if "avgdump" is true
+	"nbList": false,  // flag to set whether or not to write the neighbor list to a file (useful to examine local behavior of the system)
+	"neighbor list file": "nbl.txt",  // file to write neighbor list to if "nbList" is true
+	"avgtraj": "avg.trj", // hmmm, I forgot what this was for
+	"var01_only": true,   // only perform covariance calculations taking the "avgoutfile" from a previous calculation 
+	"avgtrajin": "avgout.trj" // a file containing a single average frame of data from a previous calculation
+}
+```
+The code can then be run as
+```
+SFunk configfile.json > outputfilename
+```
+
+
 
 
 
