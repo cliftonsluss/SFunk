@@ -1,9 +1,16 @@
 #include "PBCPointCloud_generator.h"
-
+/* PBCPointCloudGenerator
+ / simFrame reference contains a single frame of simulation data
+ / skin is the desired depth used to pad outside
+ / scaled indicates if the simFrame data has been normalized by box dimension
+ /
+ / PBCPointCloudGenerator.GetCloud() returns the point cloud with simulated
+ / periodic boundary conditions. The point cloud is in the form of a
+ / struct expectd by the nanoflann kD-tree
+*/
 
 PBCPointCloudGenerator::PBCPointCloudGenerator(simFrame<double> &frame,
-                        double skin, bool scaled,
-                        const double max_range){
+                        double skin, bool scaled){
 
   double xlen = frame.box.xlen;
   double ylen = frame.box.ylen;
@@ -49,10 +56,10 @@ PBCPointCloudGenerator::PBCPointCloudGenerator(simFrame<double> &frame,
   cloud.count = frame.num_atoms;
   // pad outside of cloud to mimic periodic boundary conditions
   // and create map of added indexes back to original indexes
-  // pbc_idx is the index of an atom at it's position in the skin
+  // pbc_idx is the index of an atom at its position in the skin
   // a map of key:value pairs is created with pbc_idx as the key and the
   // original index as the value. Any time an atom is added to the skin more
-  // than once it's new pbc_idx is added to pbc_idx_map as the key and the value
+  // than once its new pbc_idx is added to pbc_idx_map as the key and the value
   // stored at the last previous pbc_idx is stored as the value.
   int pbc_idx = cloud.count;
   // std::cout << "pbc_idx start = " << pbc_idx << std::endl;
