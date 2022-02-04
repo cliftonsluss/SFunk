@@ -26,7 +26,6 @@ PBCPointCloudGenerator::PBCPointCloudGenerator(simFrame<double> &frame,
   double z_thresh_max = frame.box.zmax - skin;
   cloud.pts.resize(frame.num_atoms);
   if (scaled) {
-    // std::cout << "reading full scaled atom positions into point cloud" << std::endl;
   // getNextFrame rescales these so if feeding frames from getNextFrame into
   // populatePointCloudPBC make sure to set scaled = true
     for (int i = 0; i < frame.num_atoms; i++){
@@ -62,7 +61,6 @@ PBCPointCloudGenerator::PBCPointCloudGenerator(simFrame<double> &frame,
   // than once its new pbc_idx is added to pbc_idx_map as the key and the value
   // stored at the last previous pbc_idx is stored as the value.
   int pbc_idx = cloud.count;
-  // std::cout << "pbc_idx start = " << pbc_idx << std::endl;
   int diff_idx = pbc_idx;
   // first we add padding to boundaries in x
   for (int i = 0; i < cloud.count; i++) {
@@ -73,8 +71,6 @@ PBCPointCloudGenerator::PBCPointCloudGenerator(simFrame<double> &frame,
       cloud.pbc_idx_map[pbc_idx] = i;
 
       pbc_idx++;
-      // std::cout << "x of index " << i << " modified by subtracting " << xlen
-      // << " and added as new index " << pbc_idx-1 << std::endl;
     }
     if (cloud.pts[i].x < x_thresh_min) {
       cloud.pts.push_back({cloud.pts[i].x + xlen,
@@ -82,11 +78,8 @@ PBCPointCloudGenerator::PBCPointCloudGenerator(simFrame<double> &frame,
                            cloud.pts[i].z});
       cloud.pbc_idx_map[pbc_idx] = i;
       pbc_idx++;
-      // std::cout << "x of index " << i << " modified by adding " << xlen
-      // << " and added as new index " << pbc_idx-1 << std::endl;
     }
   }
-  // std::cout << pbc_idx-diff_idx << " atoms added in x dir\n";
   diff_idx = pbc_idx;
   // we have to reset cloud.count to include the atoms we've added
   cloud.count = pbc_idx;
@@ -110,8 +103,6 @@ PBCPointCloudGenerator::PBCPointCloudGenerator(simFrame<double> &frame,
       else {
 	      cloud.pbc_idx_map[pbc_idx] = i;
 	      pbc_idx++;
-        // std::cout << "y of index " << i << " modified by subtracting " << xlen
-        // << " and added as new index " << pbc_idx-1 << std::endl;
       }
     }
     if (cloud.pts[i].y < y_thresh_min) {
@@ -121,18 +112,13 @@ PBCPointCloudGenerator::PBCPointCloudGenerator(simFrame<double> &frame,
       if (cloud.pbc_idx_map.find(i) != cloud.pbc_idx_map.end()) {
 	      cloud.pbc_idx_map[pbc_idx] = cloud.pbc_idx_map[i];
 	      pbc_idx++;
-        // std::cout << "y of index " << i << " modified by adding " << xlen
-        // << " and added as new index " << pbc_idx-1 << std::endl;
       }
       else {
 	      cloud.pbc_idx_map[pbc_idx] = i;
 	      pbc_idx++;
-        // std::cout << "y of index " << i << " modified by adding " << xlen
-        // << " and added as new index " << pbc_idx-1 << std::endl;
       }
     }
   }
-  // std::cout << pbc_idx-diff_idx << " atoms added in y dir\n";
   diff_idx = pbc_idx;
 
   cloud.count = pbc_idx;
@@ -146,14 +132,10 @@ PBCPointCloudGenerator::PBCPointCloudGenerator(simFrame<double> &frame,
       if (cloud.pbc_idx_map.find(i) != cloud.pbc_idx_map.end()) {
 	      cloud.pbc_idx_map[pbc_idx] = cloud.pbc_idx_map[i];
 	      pbc_idx++;
-        // std::cout << "z of index " << i << " modified by subtracting " << xlen
-        // << " and added as new index " << pbc_idx-1 << std::endl;
       }
       else {
 	      cloud.pbc_idx_map[pbc_idx] = i;
 	      pbc_idx++;
-        // std::cout << "z of index " << i << " modified by subtracting " << xlen
-        // << " and added as new index " << pbc_idx-1 << std::endl;
       }
     }
     if (cloud.pts[i].z < z_thresh_min) {
@@ -163,20 +145,13 @@ PBCPointCloudGenerator::PBCPointCloudGenerator(simFrame<double> &frame,
       if (cloud.pbc_idx_map.find(i) != cloud.pbc_idx_map.end()) {
 	      cloud.pbc_idx_map[pbc_idx] = cloud.pbc_idx_map[i];
 	      pbc_idx++;
-        // std::cout << "z of index " << i << " modified by adding " << xlen
-        // << " and added as new index " << pbc_idx-1 << std::endl;
       }
       else {
 	      cloud.pbc_idx_map[pbc_idx] = i;
 	      pbc_idx++;
-        // std::cout << "z of index " << i << " modified by adding " << xlen
-        // << " and added as new index " << pbc_idx-1 << std::endl;
       }
     }
   }
-  // std::cout << pbc_idx-diff_idx << " atoms added in z dir\n";
-  // std::cout << cloud.pbc_idx_map.size() << " atoms in padding" << std::endl;
-  // std::cout << "pbc_idx = " << pbc_idx << std::endl;
 
 };
 
