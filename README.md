@@ -5,7 +5,7 @@ The entropy functional has two forms, one for the liquid and gas phases (fluid) 
 
 ## Instalation
 Clone this git repository
-Navigate to either the solid or liquid source directory and edit the makefile to reflect your tooling setup
+Navigate to either the solid or liquid source directory and edit the makefile to reflect your tooling setup (only solid code is meaningful at this point)
 ```
 make
 ```
@@ -26,7 +26,7 @@ A json configuration file is used to configure the software for your system
 	"avgoutfile": "avgout.trj", // file to write the "avgdump" to if "avgdump" is true
 	"nbList": false,  // flag to set whether or not to write the neighbor list to a file (useful to examine local behavior of the system)
 	"neighbor list file": "nbl.txt",  // file to write neighbor list to if "nbList" is true
-	"avgtraj": "avg.trj", // hmmm, I forgot what this was for
+	"avgtraj": "avg.trj", // average frame to use to for neighbor list output (avgtraj, neighbor list file, and nblist are all diagnostic settings do no use)
 	"var01_only": true,   // only perform covariance calculations taking the "avgoutfile" from a previous calculation 
 	"avgtrajin": "avgout.trj" // a file containing a single average frame of data from a previous calculation
 }
