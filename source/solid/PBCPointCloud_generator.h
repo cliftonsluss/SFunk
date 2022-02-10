@@ -7,7 +7,7 @@ class PBCPointCloudGenerator {
     PBCPointCloudGenerator(){};
 
     PBCPointCloudGenerator(simFrame<double> &frame,
-        double skin, bool scaled = true, const double max_range = 10);
+        double skin, bool scaled = true);
 
     PointCloud<double> GetCloud();
 

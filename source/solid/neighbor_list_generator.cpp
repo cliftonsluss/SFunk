@@ -1,4 +1,4 @@
-#include "test.h"
+#include "stats.h"
 #include "neighbor_list_generator.h"
 #include <vector>
 #include <stdexcept>

@@ -80,11 +80,7 @@ struct simFrame
   std::vector<size_t> idx;
 
 	std::vector<Point>  pts;
-	// struct Box {
-	//   T xmin{0}, xmax{0}, xlen{0},
-  //     ymin{0}, ymax{0}, ylen{0},
-  //     zmin{0}, zmax{0}, zlen{0};
-	// };
+
 	Box<double> box;
 	struct Atom {
 	  int atom_num, atom_type;

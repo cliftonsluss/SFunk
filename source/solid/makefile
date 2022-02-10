@@ -7,7 +7,7 @@ CFLAGS	 = -std=c++11 -I/Users/clifton/Dropbox/Grad_school/entropy/lammps_EF/sour
 SFunk_solid: traj.o traj_reader.o read_config.o neighbor_list_generator.o PBCPointCloud_generator.o PBC.o
 	$(CC) -o $@ $^
 
-traj.o: traj.cpp test.h
+traj.o: traj.cpp stats.h
 	$(CC) $(CFLAGS) -c -g traj.cpp
 
 traj_reader.o: traj_reader.cpp traj_reader.h

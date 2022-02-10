@@ -6,7 +6,7 @@
 #include "../PBC.cpp"
 #include "../cell2frame.h"
 #include "../test.h"
-#include "test.h"
+#include "stats.h"
 #include "/Users/clifton/googletest/googletest/include/gtest/gtest.h"
 #include <math.h>
 

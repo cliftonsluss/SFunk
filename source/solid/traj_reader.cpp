@@ -1,4 +1,4 @@
-#include "test.h"
+#include "stats.h"
 #include "traj_reader.h"
 
 Trajectory::Trajectory(std::string &filename, const size_t num_atoms,

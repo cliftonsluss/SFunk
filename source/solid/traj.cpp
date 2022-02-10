@@ -4,7 +4,7 @@
 #include "structures.h"
 #include "PBC.h"
 #include "cell2frame.h"
-#include "test.h"
+#include "stats.h"
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
