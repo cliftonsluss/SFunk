@@ -51,9 +51,4 @@ The solid form of the functional takes as input a trajectory as output by MD sim
 
 
 
-@misc{blanco2014nanoflann,
-  title        = {nanoflann: a {C}++ header-only fork of {FLANN}, a library for Nearest Neighbor ({NN}) with KD-trees},
-  author       = {Blanco, Jose Luis and Rai, Pranjal Kumar},
-  howpublished = {\url{https://github.com/jlblancoc/nanoflann}},
-  year         = {2014}
-}
+
