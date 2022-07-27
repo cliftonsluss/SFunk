@@ -1,8 +1,7 @@
 #CC = g++
 #CFLAGS = -std=c++11
 CC	 = clang++
-CFLAGS	 = -std=c++11 -I/Users/clifton/Dropbox/Grad_school/entropy/lammps_EF/source/include/
-#LDFLAGS = -l
+CFLAGS	 = -std=c++11 
 
 SFunk_solid: traj.o traj_reader.o read_config.o neighbor_list_generator.o PBCPointCloud_generator.o PBC.o
 	$(CC) -o $@ $^
