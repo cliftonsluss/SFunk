@@ -99,6 +99,13 @@ struct resultSet
   std::vector<T> var_xyz;
 };
 
+template <typename T>
+struct RDF
+{
+  std::vector<T> r;
+  std::vector<T> g_of_r;
+};
+
 // template <typename T>
 // struct NeighborList
 // {
