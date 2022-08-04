@@ -17,14 +17,13 @@ class SFunk {
     double rho;
 
     double kirkwood();
-    double Q(double Rs);
+    double Q();
     double Kappa();
     double phi_tilde(double Q, double q1,double q2);
     double EPFT(int cn,
                 double pf,
                 double c1,
                 double c2,
-                double Rs,
                 double q1,
                 double q2);
 

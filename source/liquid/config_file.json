@@ -1,4 +1,11 @@
 {
-	"datafile": "test1.rdf",
-	"header": 6
+	"datafile": "test2.rdf",
+	"header": 6,
+  "density": 0.0863054743259735,
+  "coordination_number": 14,
+  "packing_fraction": 0.608589343369321,
+  "q1": 3.24833971,
+  "q2": -2.40654619,
+  "c1": 111.2735688,
+  "c2": 1.02965817
 }

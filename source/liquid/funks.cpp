@@ -18,39 +18,40 @@ double SFunk::kirkwood() {
 
   // first term in Kirkwood
   for(int i = 1; i < (rdf.r.size()-1); i++) {
-    // std::cout << rdf.r[i] << ", " << rdf.g_of_r[i] << std::endl;
+    std::cout << rdf.r[i] << ", " << rdf.g_of_r[i] << std::endl;
     if (rdf.g_of_r[i] > 0) {
-      tot = tot + rdf.g_of_r[i]*log(rdf.g_of_r[i])*rdf.r[i]*rdf.r[i];
+      tot = tot + rdf.g_of_r[i]*log(rdf.g_of_r[i])*pow(rdf.r[i],2);
     }
   }
   if (rdf.g_of_r.front() > 0) {
-    first = rdf.g_of_r.front()*log(rdf.g_of_r.front())*rdf.r.front()*rdf.r.front();
+    first = rdf.g_of_r.front()*log(rdf.g_of_r.front())*pow(rdf.r.front(),2);
   }
   if (rdf.g_of_r.back() > 0) {
-    first = rdf.g_of_r.back()*log(rdf.g_of_r.back())*rdf.r.back()*rdf.r.back();
+    first = rdf.g_of_r.back()*log(rdf.g_of_r.back())*pow(rdf.r.back(),2);
   }
   first_term = 0.5*dr*(first + 2.0*tot + last);
 
   // second term in kirkwood
   tot = 0.0;
   for(int i = 1; i < (rdf.r.size()-1); i++) {
-    tot = tot + (rdf.g_of_r[i] -1)*rdf.r[i]*rdf.r[i];
+    tot = tot + (rdf.g_of_r[i] -1)*pow(rdf.r[i],2);
   }
-  first = (rdf.g_of_r.front() -1)*rdf.r.front()*rdf.r.front();
-  last = (rdf.g_of_r.back() -1)*rdf.r.back()*rdf.r.back();
+  first = (rdf.g_of_r.front() -1)*pow(rdf.r.front(),2);
+  last = (rdf.g_of_r.back() -1)*pow(rdf.r.back(),2);
   second_term = 0.5*dr*(first + 2.0*tot + last);
 
   integral = -1.0 -0.5*(-1 + rho*4.0*PI*(first_term - second_term));
-
+  std::cout << "pi = " << PI << std::endl;
   return integral;
 }
 
-double SFunk::Q(double Rs){
+double SFunk::Q(){
   double dr = rdf.r[1] - rdf.r[0];
   double tot = 0.0;
   double fact = rho*4.0*PI;
   double first = 0.0;
   double last = 0.0;
+  double Rs = pow(0.75/PI/rho,0.3333333333);
 
   for(int i = 1; i < (rdf.r.size()-1); i++) {
     tot = tot + (fact*rdf.g_of_r[i]*Prob_r(rdf.r[i],Rs)*(rdf.r[i]*rdf.r[i]));
@@ -90,7 +91,6 @@ double SFunk::EPFT(int cn,
                    double pf,
                    double c1,
                    double c2,
-                   double Rs,
                    double q1,
                    double q2) {
   // we use the coordination number and packing fraction
@@ -105,7 +105,7 @@ double SFunk::EPFT(int cn,
                           pfb,
                           rho,
                           c1,
-                          c2) + 0.5*phi_tilde(Q(Rs), q1, q2);
+                          c2) + 0.5*phi_tilde(Q(), q1, q2);
 }
 
 double SFunk::Prob_r(double r, double Rs) {

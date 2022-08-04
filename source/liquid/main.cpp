@@ -1,14 +1,9 @@
 #include "funks.h"
-// #include "rdf.h"
-// #include "sim.h"
 #include "../solid/read_config.h"
 #include "../solid/structures.h"
 #include "rdf_reader.h"
 #include <vector>
 #include <iostream>
-
-// using namespace std;
-// using namespace entropy_functional;
 
 int main(int argc, char *argv[]) {
 
@@ -23,43 +18,45 @@ int main(int argc, char *argv[]) {
   int header = config.j["header"];
   std::cout << "Skipping " << header << " header lines" << std::endl;
 
+  double rho = config.j["density"];
+  std::cout << "density = " << rho << std::endl;
+
+  int cn = config.j["coordination_number"];
+  std::cout << "coordination number = " << cn << std::endl;
+
+  double pf = config.j["packing_fraction"];
+  std::cout << "packing fraction = " << pf << std::endl;
+
+  double c1 = config.j["c1"];
+  std::cout << "c1 = " << c1 << std::endl;
+
+  double c2 = config.j["c2"];
+  std::cout << "c2 = " << c2 << std::endl;
+
+  double q1 = config.j["q1"];
+  std::cout << "q1 = " << q1 << std::endl;
+
+  double q2 = config.j["q2"];
+  std::cout << "q2 = " << q2 << std::endl;
+
+
   RDF<double> rdf;
-  double rho = 0.43;
+
 
   RDF_reader rdf_reader(datafile, header);
   rdf_reader.getData(rdf);
 
   SFunk sfunk(rdf, rho);
 
-  sfunk.kirkwood();
+  double kirk = sfunk.kirkwood();
+  double Q = sfunk.Q();
+  double phit = sfunk.phi_tilde(Q, q1, q2);
+  double epft = sfunk.EPFT(cn, pf, c1, c2, q1, q2);
 
+  std::cout << "Kirkwood entropy = " << kirk << std::endl;
+  std::cout << "Q = " << Q << std::endl;
+  std::cout << "phi tilde = " << phit << std::endl;
+  std::cout << "EPFT = " << epft << std::endl;
 
-
-  // for (int i = 0; i < rdf.r.size(); i++){
-  //
-  //   std::cout << i << ", " << rdf.r[i] << ", " << rdf.g_of_r[i] << std::endl;
-  //
-  // }
-  // std::cout << rdf.r[0] << ", " << rdf.g_of_r[0] << std::endl;
-
-
-  // 	//double T = 1000000.0;
-	// double a = 2.86997;
-	// double T = 1000000.0;
-	// double box = 20.0;
-	// int N = 16000;
-	// //double R = 28.5995;
-	// double R = 28.5995;
-  //       //double R = 28.60;
-	// double mass = 3.36299e-21;
-	// string filename = "./rdfs/iron_1000000K.rdf";
-	// RDF rdf(filename);
-	// rdf.test();
-	// SIM sim(a, box, N, mass, R);
-	// SFunk s_funk(rdf, sim, T);
-  //
-	// cout << "S excess  = " << s_funk.get_S_excess() << "\n";
-  //       cout << "Q = " << s_funk.get_Q() << "\n";
-	// cout << "rdf integral = " << rdf.get_integral() << endl;
 
 }
