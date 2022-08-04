@@ -18,7 +18,6 @@ double SFunk::kirkwood() {
 
   // first term in Kirkwood
   for(int i = 1; i < (rdf.r.size()-1); i++) {
-    std::cout << rdf.r[i] << ", " << rdf.g_of_r[i] << std::endl;
     if (rdf.g_of_r[i] > 0) {
       tot = tot + rdf.g_of_r[i]*log(rdf.g_of_r[i])*pow(rdf.r[i],2);
     }
